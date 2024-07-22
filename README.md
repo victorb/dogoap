@@ -1,0 +1,20 @@
+# Data-Oriented, Goal-Oriented Action Planning
+> AKA DOGOAP - GOAP implemented in data-oriented way to facilitate dynamically setting up states/actions/goals rather than only at compile-time
+
+> Includes bevy_dogoap which provides a neat Bevy integration of the dogoap library
+
+## Documentation
+
+- [`dogoap docs`](./crates/dogoap/README.md) - Standalone library for creation actions, states and goals to be used with the provided planner
+- [`bevy_dogoap docs`](./crates/bevy_dogoap/README.md) - Integration of the `dogoap` library into Bevy
+
+## Resources
+> Some resources if you want to read up on GOAP, STRIPS and related tech
+
+## Prior Art / Other similar projects
+
+- https://github.com/skyne98/soap - A lot of inspiration taken from this repository, biggest difference is the data-oriented structure that dogoap has
+
+## License
+
+MIT 2024 - Victor Bjelkholm
