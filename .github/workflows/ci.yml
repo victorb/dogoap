@@ -1,0 +1,26 @@
+name: Check, Build and Test code
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+    - name: Install nightly
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly-2024-07-30
+        override: true
+        default: nightly-2024-07-30
+        components: rustfmt, clippy, rust-src
+        target: wasm32-unknown-unknown
+    - uses: Leafwing-Studios/cargo-cache@v2
+    - name: Make all
+      run: make all

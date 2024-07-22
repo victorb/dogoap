@@ -1,0 +1,12 @@
+[package]
+name = "dogoap"
+version = "0.1.0"
+edition = "2021"
+description = "dogoap"
+license = "MIT"
+homepage = "https://github.com/victorb/dogoap"
+
+[dependencies]
+bevy_reflect = "0.14.0"
+log = "0.4.22"
+pathfinding = "4.10.0"

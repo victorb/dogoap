@@ -1,0 +1,101 @@
+:root {
+  --color1: rgba(0, 0, 0, 0.9);
+}
+
+body {
+  background: linear-gradient(135deg,
+      var(--color1) 0%,
+      var(--color1) 49%,
+      black 49%,
+      black 51%,
+      var(--color1) 51%,
+      var(--color1) 100%) repeat;
+  background-size: 20px 20px;
+  font-family: sans-serif;
+}
+
+#title {
+  font-size: 26px;
+  margin-left: 10px;
+  font-family: monospace;
+  color: white;
+  text-align: center;
+}
+
+#menu {
+  height: 50px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: end;
+  padding-left: 10px;
+}
+
+#menu a {
+  font-size: 22px;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  margin-right: 50px;
+}
+
+#menu a.active,
+#menu a:hover {
+  color: rgba(255, 255, 255, 1.0);
+  text-decoration: underline;
+}
+
+a.right-aligned {
+  margin-left: auto;
+  margin-right: 10px !important;
+}
+
+#wrapper {
+  margin-top: 25px;
+  display: flex;
+  flex-grow: 1;
+  padding: 10px;
+}
+
+#container {
+  width: 1280px;
+  height: 720px;
+  min-width: 180px;
+  min-height: 120px;
+  background-color: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+#loading {
+  position: absolute;
+  z-index: 0;
+  font-size: 2em;
+}
+
+canvas {
+  outline: none;
+  z-index: 1;
+}
+
+#code {
+  font-size: 0.8em;
+  background-color: rgba(0, 0, 0, 0.3);
+  flex: 1;
+  max-height: 90vh;
+  overflow-y: scroll;
+  margin-left: 20px;
+}
+
+[class*="shj-lang-"] {
+  margin: 0px;
+  padding: 0px;
+}
+

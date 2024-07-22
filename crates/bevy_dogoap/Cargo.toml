@@ -1,0 +1,18 @@
+[package]
+name = "bevy_dogoap"
+version = "0.1.0"
+edition = "2021"
+description = "bevy_dogoap"
+license = "MIT"
+homepage = "https://github.com/victorb/dogoap"
+
+[features]
+default = ["compute-pool"]
+compute-pool = []
+
+[dependencies]
+bevy = { version = "0.14.0", default-features = false, optional = false, features = ["wayland", "bevy_gizmos", "bevy_text", "multi_threaded", "default_font", "webgl2"]}
+bevy-trait-query = { git = "https://github.com/RobWalt/bevy-trait-query.git", rev = "215b9068e8457d96ddcd4c8efa9605ba0f8feda5", version = "0.5.1" }
+dogoap = { path = "../dogoap", version = "*"}
+macros = { path = "../macros", version = "*"}
+rand = "0.8.5"
