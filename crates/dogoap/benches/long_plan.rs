@@ -30,7 +30,6 @@ mod tests {
             .with_effect(
                 Effect {
                     action: "rob".to_string(),
-                    argument: None,
                     mutators: vec![
                         Mutator::Decrement("energy".to_string(), Field::I64(5)),
                         Mutator::Increment("hunger".to_string(), Field::I64(5)),

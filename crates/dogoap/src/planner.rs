@@ -81,7 +81,6 @@ fn successors(node: Node, actions: &[Action]) -> impl Iterator<Item = (Node, usi
             }
             let new_effect = Effect {
                 action: action.options[0].0.action.clone(),
-                argument: action.options[0].0.argument,
                 mutators: action.options[0].0.mutators.clone(),
                 state: new_state,
             };

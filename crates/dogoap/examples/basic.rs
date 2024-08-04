@@ -15,7 +15,6 @@ fn main() {
         options: vec![(
             Effect {
                 action: "eat".to_string(),
-                argument: None,
                 mutators: vec![Mutator::Set(
                     "is_hungry".to_string(),
                     Field::from_bool(false),

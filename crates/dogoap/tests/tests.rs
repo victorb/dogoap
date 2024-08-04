@@ -13,7 +13,6 @@ fn test_basic_bool_setting() {
 
     let eat_consequence = Effect {
         action: "eat".to_string(),
-        argument: None,
         mutators: vec![eat_mutator.clone()],
         state: LocalState::new(),
     };
@@ -31,7 +30,6 @@ fn test_basic_bool_setting() {
 
     let cons = plan.get(0).unwrap();
     assert_eq!("eat", cons.action);
-    assert_eq!(None, cons.argument);
     assert_eq!(1, cons.mutators.len());
     assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
 
@@ -50,7 +48,6 @@ fn test_action_keys() {
 
     let eat_consequence = Effect {
         action: "eat".to_string(),
-        argument: None,
         mutators: vec![eat_mutator.clone()],
         state: LocalState::new(),
     };
@@ -68,7 +65,6 @@ fn test_action_keys() {
 
     let cons = plan.get(0).unwrap();
     assert_eq!("eat", cons.action);
-    assert_eq!(None, cons.argument);
     assert_eq!(1, cons.mutators.len());
     assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
 
@@ -87,7 +83,6 @@ fn test_no_actions_needed() {
 
     let eat_consequence = Effect {
         action: "eat".to_string(),
-        argument: None,
         mutators: vec![eat_mutator.clone()],
         state: LocalState::new(),
     };
@@ -126,7 +121,6 @@ fn test_simple_action() {
 
     let cons = plan.get(0).unwrap();
     assert_eq!("eat", cons.action);
-    assert_eq!(None, cons.argument);
     assert_eq!(1, cons.mutators.len());
     assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
     assert_eq!(expected_state, cons.state);
@@ -160,12 +154,10 @@ fn test_two_bools() {
 
     let first_cons = cons.get(0).unwrap();
     assert_eq!("eat", first_cons.action);
-    assert_eq!(None, first_cons.argument);
     assert_eq!(1, first_cons.mutators.len());
 
     let second_cons = cons.get(1).unwrap();
     assert_eq!("sleep", second_cons.action);
-    assert_eq!(None, second_cons.argument);
     assert_eq!(1, second_cons.mutators.len());
 
     assert_eq!(expected_state, second_cons.state);
@@ -226,22 +218,18 @@ fn test_four_bools() {
 
     let first_cons = cons.get(0).unwrap();
     assert_eq!("train", first_cons.action);
-    assert_eq!(None, first_cons.argument);
     assert_eq!(3, first_cons.mutators.len());
 
     let second_cons = cons.get(1).unwrap();
     assert_eq!("shower", second_cons.action);
-    assert_eq!(None, second_cons.argument);
     assert_eq!(2, second_cons.mutators.len());
 
     let third_cons = cons.get(2).unwrap();
     assert_eq!("sleep", third_cons.action);
-    assert_eq!(None, third_cons.argument);
     assert_eq!(2, third_cons.mutators.len());
 
     let fourth_cons = cons.get(3).unwrap();
     assert_eq!("eat", fourth_cons.action);
-    assert_eq!(None, fourth_cons.argument);
     assert_eq!(1, fourth_cons.mutators.len());
 
     let expected_state = LocalState::new()
@@ -290,17 +278,14 @@ fn test_enums() {
 
     let cons = effects.get(0).unwrap();
     assert_eq!("go_outside", cons.action);
-    assert_eq!(None, cons.argument);
     assert_eq!(1, cons.mutators.len());
 
     let cons = effects.get(1).unwrap();
     assert_eq!("go_to_market", cons.action);
-    assert_eq!(None, cons.argument);
     assert_eq!(1, cons.mutators.len());
 
     let cons = effects.get(2).unwrap();
     assert_eq!("go_to_ramen", cons.action);
-    assert_eq!(None, cons.argument);
     assert_eq!(1, cons.mutators.len());
 
     // Take only the last one
@@ -343,17 +328,14 @@ fn test_preconditions() {
 
     let first_cons = plan.get(0).unwrap();
     assert_eq!("sleep", first_cons.action);
-    assert_eq!(None, first_cons.argument);
     assert_eq!(1, first_cons.mutators.len());
 
     let second_cons = plan.get(1).unwrap();
     assert_eq!("eat", second_cons.action);
-    assert_eq!(None, second_cons.argument);
     assert_eq!(2, second_cons.mutators.len());
 
     let third_cons = plan.get(2).unwrap();
     assert_eq!("sleep", third_cons.action);
-    assert_eq!(None, third_cons.argument);
     assert_eq!(1, third_cons.mutators.len());
 
     assert_eq!(
@@ -381,7 +363,6 @@ fn test_int_increment() {
 
     for cons in &plan {
         assert_eq!("eat", cons.action);
-        assert_eq!(None, cons.argument);
         assert_eq!(1, cons.mutators.len());
         assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
     }
@@ -406,7 +387,6 @@ fn test_int_decrement() {
 
     for cons in &plan {
         assert_eq!("eat", cons.action);
-        assert_eq!(None, cons.argument);
         assert_eq!(1, cons.mutators.len());
         assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
     }
@@ -431,7 +411,6 @@ fn test_float_increment() {
 
     for cons in &plan {
         assert_eq!("eat", cons.action);
-        assert_eq!(None, cons.argument);
         assert_eq!(1, cons.mutators.len());
         assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
     }
@@ -461,7 +440,6 @@ fn test_greater_than_equals() {
 
     for cons in &effects {
         assert_eq!("eat", cons.action);
-        assert_eq!(None, cons.argument);
         assert_eq!(1, cons.mutators.len());
         assert_eq!(
             Mutator::Increment("energy".to_string(), Field::from(6)),
@@ -496,7 +474,6 @@ fn test_long_plan() {
         .with_effect(
             Effect {
                 action: "rob".to_string(),
-                argument: None,
                 mutators: vec![
                     Mutator::Decrement("energy".to_string(), Field::from_i64(20)),
                     Mutator::Increment("hunger".to_string(), Field::from_i64(20)),
@@ -545,7 +522,6 @@ fn test_reverse_strategy() {
 
     let cons = plan.get(0).unwrap();
     assert_eq!("eat", cons.action);
-    assert_eq!(None, cons.argument);
     assert_eq!(1, cons.mutators.len());
     assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
     assert_eq!(expected_state, cons.state);

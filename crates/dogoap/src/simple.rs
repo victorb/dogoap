@@ -23,7 +23,6 @@ where
         options: vec![(
             Effect {
                 action: name.to_string(),
-                argument: None,
                 mutators,
                 state: LocalState::new(),
             },
@@ -40,7 +39,6 @@ where
     action.options = vec![(
         Effect {
             action: name.to_string(),
-            argument: None,
             mutators: vec![Mutator::Increment(
                 key_to_mutate.to_string(),
                 from_value.into(),
@@ -60,7 +58,6 @@ where
     action.options = vec![(
         Effect {
             action: name.to_string(),
-            argument: None,
             mutators: vec![Mutator::Decrement(
                 key_to_mutate.to_string(),
                 from_value.into(),

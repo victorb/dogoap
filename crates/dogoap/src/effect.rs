@@ -5,7 +5,6 @@ use std::hash::{Hash, Hasher};
 #[derive(Reflect, Clone, Debug, PartialEq, Eq, Default)]
 pub struct Effect {
     pub action: String,
-    pub argument: Option<Field>,
     pub mutators: Vec<Mutator>,
     pub state: LocalState,
 }
@@ -14,7 +13,6 @@ impl Effect {
     pub fn new(action_name: &str) -> Self {
         Self {
             action: action_name.to_string(),
-            argument: None,
             mutators: vec![],
             state: LocalState::new(),
         }
@@ -28,7 +26,6 @@ impl Effect {
 impl Hash for Effect {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.action.hash(state);
-        self.argument.hash(state);
         self.mutators.hash(state);
         self.state.hash(state);
     }
