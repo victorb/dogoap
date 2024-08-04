@@ -55,26 +55,24 @@ fn heuristic(node: &Node, goal: &Goal) -> usize {
 
 // TODO This function is fucking horrible
 // Why I did the whole `action.options[0].0.action.clone()` thing?
-fn successors(node: Node, actions: &[Action]) -> impl Iterator<Item = (Node, usize)> + '_ {
-    let state = node.state().clone();
+fn successors<'a>(node: &'a Node, actions: &'a [Action]) -> impl Iterator<Item = (Node, usize)> + 'a {
+    let state = node.state();
     actions.iter().filter_map(move |action| {
-        if check_preconditions(&state, action) {
+        if check_preconditions(state, action) {
             let mut new_state = state.clone();
             for mutator in &action.options[0].0.mutators {
                 match mutator {
                     Mutator::Set(key, value) => {
-                        new_state.fields.insert(key.clone(), *value);
+                        new_state.fields.insert(key.to_string(), *value);
                     }
                     Mutator::Increment(key, value) => {
-                        if let Some(current_value) = new_state.fields.get(key).cloned() {
-                            let new_value = current_value + *value;
-                            new_state.fields.insert(key.clone(), new_value);
+                        if let Some(current_value) = new_state.fields.get_mut(key) {
+                            *current_value += *value;
                         }
                     }
                     Mutator::Decrement(key, value) => {
-                        if let Some(current_value) = new_state.fields.get(key).cloned() {
-                            let new_value = current_value - *value;
-                            new_state.fields.insert(key.clone(), new_value);
+                        if let Some(current_value) = new_state.fields.get_mut(key) {
+                            *current_value -= *value;
                         }
                     }
                 }
@@ -90,7 +88,6 @@ fn successors(node: Node, actions: &[Action]) -> impl Iterator<Item = (Node, usi
         }
     })
 }
-
 
 fn is_goal(node: &Node, goal: &Goal) -> bool {
     goal.requirements.iter().all(|(key, value)| {
@@ -125,7 +122,7 @@ pub fn make_plan_with_strategy(
             let start_node = Node::State(start.clone());
             pathfinding::directed::astar::astar(
                 &start_node,
-                |node| successors(node.clone(), actions),
+                |node| successors(node, actions).collect::<Vec<_>>().into_iter(),
                 |node| heuristic(node, goal),
                 |node| is_goal(node, goal),
             )
