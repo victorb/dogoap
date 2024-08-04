@@ -634,10 +634,10 @@ fn handle_eat_action(
 fn handle_sleep_action(
     time: Res<Time>,
     mut commands: Commands,
-    mut query: Query<(Entity, &SleepAction, &mut Energy, &mut Planner)>,
+    mut query: Query<(Entity, &SleepAction, &mut Energy)>,
 ) {
     let mut rng = rand::thread_rng();
-    for (entity, _action, mut energy, mut planner) in query.iter_mut() {
+    for (entity, _action, mut energy) in query.iter_mut() {
         // Stop planning while we sleep
         // planner.always_plan = false;
         let r = rng.gen_range(5.0..20.0);
@@ -838,7 +838,7 @@ fn handle_sell_metal_action(
     >,
     mut progress: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, t_entity, mut has_metal, mut gold_amount, mut at_location) in
+    for (entity, _action, _t_entity, mut has_metal, mut gold_amount, mut at_location) in
         query.iter_mut()
     {
         action_with_progress(&mut progress, entity, &time, 1.0, |is_completed| {

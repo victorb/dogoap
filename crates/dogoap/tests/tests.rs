@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use dogoap::prelude::*;
 
 // One action that sets one field

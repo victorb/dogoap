@@ -17,7 +17,7 @@
 
 use std::collections::HashMap;
 
-use bevy::{color::palettes::css::*, prelude::*, transform::commands};
+use bevy::{color::palettes::css::*, prelude::*};
 use bevy_dogoap::{create_action_map_v2, prelude::*};
 use dogoap::prelude::*;
 
@@ -80,7 +80,7 @@ struct StateDebugText;
 
 fn setup(mut commands: Commands) {
     // Spawn customers
-    for i in 0..1 {
+    for _i in 0..1 {
         let goal = Goal::new().with_req(&Thirst::key(), Compare::LessThanEquals(Datum::F64(1.0)));
 
         let goals = vec![goal.clone()];
@@ -160,7 +160,7 @@ fn setup(mut commands: Commands) {
     }
 
     // Spawn worker
-    for i in 0..1 {
+    for _i in 0..1 {
         commands
             .spawn((
                 Agent,
@@ -207,7 +207,7 @@ fn handle_pickup_lemonade(
     mut query: Query<(Entity, &PickupLemonade, &mut CarryingItem)>,
     mut progresses: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, action, mut state) in query.iter_mut() {
+    for (entity, _action, mut state) in query.iter_mut() {
         match progresses.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
@@ -234,7 +234,7 @@ fn handle_drink_lemonade(
     mut query: Query<(Entity, &DrinkLemonade, &mut CarryingItem, &mut Thirst)>,
     mut progresses: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, action, mut state, mut thirst) in query.iter_mut() {
+    for (entity, _action, mut state, mut thirst) in query.iter_mut() {
         match progresses.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
@@ -257,7 +257,7 @@ fn handle_drink_lemonade(
     }
 }
 
-fn update_thirst(time: Res<Time>, mut query: Query<(&mut Thirst)>) {
+fn update_thirst(time: Res<Time>, mut query: Query<&mut Thirst>) {
     for mut thirst in query.iter_mut() {
         thirst.0 += time.delta_seconds_f64() * 0.3;
         if thirst.0 > 100.0 {
@@ -301,7 +301,7 @@ fn draw_state_debug(
         }
     }
     for (entity, name, children) in q_workers.iter() {
-        let mut current_action = "Idle";
+        let current_action = "Idle";
 
         // let (is_planning, eat, go_to_mushroom, replicate) = q_actions.get(entity).unwrap();
 

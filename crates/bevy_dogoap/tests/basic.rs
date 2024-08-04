@@ -184,9 +184,6 @@ fn handle_sleep_action(
 }
 
 mod test {
-
-    use bevy_dogoap::{make_plan, print_plan};
-
     use super::*;
 
     // Test utils
@@ -246,7 +243,7 @@ mod test {
 
         // TODO this could be flaky because of the AsyncTaskPool, should force planning
         // to be sync in testing. Ideally should be 3 updates, but setting it to 4 to be safe(r)
-        for i in 0..4 {
+        for _i in 0..4 {
             app.update();
         }
 

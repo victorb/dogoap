@@ -8,7 +8,6 @@ use crate::{
 };
 
 use bevy_reflect::Reflect;
-use pathfinding::prelude::astar;
 
 #[derive(Reflect, Clone, Eq, PartialEq, Hash)]
 pub enum Node {

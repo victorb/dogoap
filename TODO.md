@@ -55,7 +55,8 @@
 - [X] We want to be able to Query for values in our Planner, without involving the Planner, how can we do this? Or does it make sense to be able to individually Query for those?
     - [X] What if the planner was a struct with derive
 - [ ] Come up with a better name than "DOGOAP"?
-- [ ] Remove graph generation stuff
+    - This can come when it comes...
+- [X] Remove graph generation stuff
 
 ## Tests
 

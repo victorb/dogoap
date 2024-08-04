@@ -16,7 +16,7 @@ struct ComputePlan(Task<u64>);
 
 fn laggy_system(mut commands: Commands) {
     let thread_pool = AsyncComputeTaskPool::get();
-    for i in 0..10 {
+    for _i in 0..10 {
         let task = thread_pool.spawn(async move {
             let mut rng = rand::thread_rng();
             let n = rng.gen_range(0..1000);

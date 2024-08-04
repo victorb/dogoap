@@ -66,10 +66,10 @@ fn vec3_to_vec2(v: Vec3) -> Vec2 {
 }
 
 fn draw_ui(mut gizmos: Gizmos, q_probes: Query<(Entity, &Transform, &ProbeDetection), With<Probe>>, ) {
-    for (entity, transform, detection) in q_probes.iter() {
+    for (_entity, transform, detection) in q_probes.iter() {
         gizmos.circle_2d(vec3_to_vec2(transform.translation), 16., NAVY);
 
-        for (e, position) in &detection.detected_entities {
+        for (_e, position) in &detection.detected_entities {
             gizmos.circle_2d(*position, 32., RED);
         }
 

@@ -282,7 +282,7 @@ fn handle_replicate_action(
     mut timers: Local<HashMap<Entity, Timer>>,
     time: Res<Time>,
 ) {
-    for (entity, action, field, mut hunger, mut planner, miner, transform) in query.iter_mut() {
+    for (entity, _action, _field, mut hunger, mut planner, miner, transform) in query.iter_mut() {
         match timers.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {

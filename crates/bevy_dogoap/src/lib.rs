@@ -1,13 +1,9 @@
 #![doc = include_str!("../README.md")]
 use std::any::Any;
 use std::fmt;
-use std::time::Duration;
 
-use bevy::app::MainScheduleOrder;
-use bevy::ecs::schedule::ScheduleLabel;
 use bevy::prelude::*;
 
-use bevy::time::common_conditions::on_timer;
 // Public API
 pub use dogoap::prelude::*;
 
@@ -143,9 +139,6 @@ pub fn goal_from_datumcomponents(
     }
     new_goal
 }
-
-#[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
-struct PlanningSchedule;
 
 pub struct DogoapPlugin;
 
