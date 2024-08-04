@@ -35,12 +35,15 @@ impl LocalState {
     }
 
     pub fn distance_to_goal(&self, goal: &Goal) -> u64 {
-        goal.requirements.iter().map(|(key, goal_val)| {
-            match self.data.get(key) {
-                Some(state_val) => state_val.distance(&goal_val.value()),
-                None => 1, // Penalty for missing keys
-            }
-        }).sum()
+        goal.requirements
+            .iter()
+            .map(|(key, goal_val)| {
+                match self.data.get(key) {
+                    Some(state_val) => state_val.distance(&goal_val.value()),
+                    None => 1, // Penalty for missing keys
+                }
+            })
+            .sum()
     }
 }
 
@@ -71,8 +74,12 @@ mod tests {
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 25);
 
-        let state = LocalState::new().with_datum("energy", Datum::I64(25)).with_datum("hunger", Datum::F64(25.0));
-        let goal_state = Goal::new().with_req("energy", Compare::Equals(Datum::I64(50))).with_req("hunger", Compare::Equals(Datum::F64(50.0)));
+        let state = LocalState::new()
+            .with_datum("energy", Datum::I64(25))
+            .with_datum("hunger", Datum::F64(25.0));
+        let goal_state = Goal::new()
+            .with_req("energy", Compare::Equals(Datum::I64(50)))
+            .with_req("hunger", Compare::Equals(Datum::F64(50.0)));
         let distance = state.distance_to_goal(&goal_state.clone());
         assert_eq!(distance, 50);
     }

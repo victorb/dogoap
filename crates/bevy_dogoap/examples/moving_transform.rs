@@ -105,7 +105,7 @@ fn spawn_miner(commands: &mut Commands, position: Vec3, speed: f32) {
     commands
         .spawn((
             Name::new("Miner"),
-            Miner {speed},
+            Miner { speed },
             planner,
             initial_state,
             Transform::from_translation(position),
@@ -208,7 +208,7 @@ fn handle_go_to_mushroom_action(
         (Without<Mushroom>, Without<MoveTo>),
     >,
     q_mushrooms: Query<(Entity, &Transform), (With<Mushroom>, Without<BusyObject>)>,
-    q_busy: Query<&BusyObject>
+    q_busy: Query<&BusyObject>,
 ) {
     for (entity, _action, t_entity, mut at_mushroom) in query.iter_mut() {
         let origin = t_entity.translation;
@@ -219,16 +219,16 @@ fn handle_go_to_mushroom_action(
             Some(v) => v,
             None => {
                 // Do nothing...
-                continue
-            },
+                continue;
+            }
         };
 
         match q_busy.get(e_mushroom) {
             Ok(busy) => {
                 if busy.0 != entity {
-                    continue
+                    continue;
                 }
-            },
+            }
             Err(_) => {}
         }
 

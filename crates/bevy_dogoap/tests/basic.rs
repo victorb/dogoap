@@ -235,7 +235,9 @@ mod test {
         app.register_component_as::<dyn DatumComponent, IsTired>();
 
         app.add_plugins(DogoapPlugin);
-        app.add_plugins(TaskPoolPlugin{task_pool_options: TaskPoolOptions::with_num_threads(1)});
+        app.add_plugins(TaskPoolPlugin {
+            task_pool_options: TaskPoolOptions::with_num_threads(1),
+        });
         app.init_resource::<Time>();
 
         app.add_systems(Startup, startup);

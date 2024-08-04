@@ -172,10 +172,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
         let eat_action = Action::new(EAT_ACTION)
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_mushroom))
-            .with_precondition(
-                ENERGY_KEY,
-                Compare::GreaterThanEquals(Datum::F64(50.0)),
-            )
+            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
             .with_effect(
                 Effect::new(EAT_ACTION)
                     .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(25.0)))
@@ -188,14 +185,8 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_house));
 
         let mine_ore_action = Action::new(MINE_ORE_ACTION)
-            .with_precondition(
-                ENERGY_KEY,
-                Compare::GreaterThanEquals(Datum::F64(50.0)),
-            )
-            .with_precondition(
-                HUNGER_KEY,
-                Compare::LessThanEquals(Datum::F64(50.0)),
-            )
+            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
+            .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_ore))
             .with_effect(
                 Effect::new(MINE_ORE_ACTION)

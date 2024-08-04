@@ -34,7 +34,6 @@ impl Goal {
     }
 }
 
-
 impl Default for Goal {
     fn default() -> Self {
         Goal::new()

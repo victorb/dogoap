@@ -29,19 +29,19 @@ impl Hash for Compare {
             Compare::Equals(datum) => {
                 0_u8.hash(state);
                 datum.hash(state);
-            },
+            }
             Compare::NotEquals(datum) => {
                 1_u8.hash(state);
                 datum.hash(state);
-            },
+            }
             Compare::GreaterThanEquals(datum) => {
                 2_u8.hash(state);
                 datum.hash(state);
-            },
+            }
             Compare::LessThanEquals(datum) => {
                 3_u8.hash(state);
                 datum.hash(state);
-            },
+            }
         }
     }
 }
@@ -180,10 +180,7 @@ mod test {
         ];
 
         for (val1, val2, expected) in cases {
-            let ret = compare_values(
-                &Compare::NotEquals(Datum::I64(val1)),
-                &Datum::I64(val2),
-            );
+            let ret = compare_values(&Compare::NotEquals(Datum::I64(val1)), &Datum::I64(val2));
             assert_eq!(
                 ret, expected,
                 "Expected {} to not be equal to {}, but compare_values returned {:#?}",

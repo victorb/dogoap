@@ -130,9 +130,7 @@ macro_rules! create_goal {
     }};
 }
 
-pub fn goal_from_datumcomponents(
-    components: Vec<(Box<dyn DatumComponent>, Compare)>,
-) -> Goal {
+pub fn goal_from_datumcomponents(components: Vec<(Box<dyn DatumComponent>, Compare)>) -> Goal {
     let mut new_goal = Goal::new();
     for (component, compare) in components {
         new_goal = new_goal.with_req(&component.field_key(), compare)
@@ -158,7 +156,8 @@ impl Plugin for DogoapPlugin {
                     planner::update_planner_local_state,
                     planner::create_planner_tasks,
                     planner::handle_planner_tasks,
-                ).chain(),
+                )
+                    .chain(),
             )
             // .add_systems(PlanningSchedule,
             //     (planner::update_planner_local_state,

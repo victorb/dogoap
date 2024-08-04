@@ -39,7 +39,10 @@ fn heuristic(node: &Node, goal: &Goal) -> usize {
 
 // TODO This function is fucking horrible
 // Why I did the whole `action.options[0].0.action.clone()` thing?
-fn successors<'a>(node: &'a Node, actions: &'a [Action]) -> impl Iterator<Item = (Node, usize)> + 'a {
+fn successors<'a>(
+    node: &'a Node,
+    actions: &'a [Action],
+) -> impl Iterator<Item = (Node, usize)> + 'a {
     let state = node.state();
     actions.iter().filter_map(move |action| {
         if check_preconditions(state, action) {
@@ -110,7 +113,7 @@ pub fn make_plan_with_strategy(
                 |node| heuristic(node, goal),
                 |node| is_goal(node, goal),
             )
-        },
+        }
         PlanningStrategy::GoalToStart => {
             panic!("PlanningStrategy::GoalToStart hasn't been implemented yet!");
         }

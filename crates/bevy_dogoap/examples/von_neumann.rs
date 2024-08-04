@@ -39,13 +39,10 @@ impl Default for Probe {
     }
 }
 
-
 #[derive(Component, Default)]
 struct ProbeDetection {
     detected_entities: Vec<(Entity, Vec2)>,
 }
-
-
 
 fn startup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
@@ -65,7 +62,10 @@ fn vec3_to_vec2(v: Vec3) -> Vec2 {
     Vec2::new(v.x, v.y)
 }
 
-fn draw_ui(mut gizmos: Gizmos, q_probes: Query<(Entity, &Transform, &ProbeDetection), With<Probe>>, ) {
+fn draw_ui(
+    mut gizmos: Gizmos,
+    q_probes: Query<(Entity, &Transform, &ProbeDetection), With<Probe>>,
+) {
     for (_entity, transform, detection) in q_probes.iter() {
         gizmos.circle_2d(vec3_to_vec2(transform.translation), 16., NAVY);
 
@@ -110,17 +110,17 @@ fn update_probe_steering(mut q_probes: Query<(&mut Probe, &Transform)>) {
         let direction_to_center = center - transform.translation;
         let angle_to_center = direction_to_center.y.atan2(direction_to_center.x);
         let bias_strength = 0.5; // Tune this parameter to increase or decrease the influence
-        
+
         // Calculate the angle difference
         let mut angle_diff = angle_to_center - probe.target_steering_angle;
-        
+
         // Normalize the angle difference to be between -PI and PI
         angle_diff = (angle_diff + PI) % (2.0 * PI) - PI;
-        
+
         // Update the target steering angle
-        probe.target_steering_angle += 
+        probe.target_steering_angle +=
             rng.gen_range(-0.5..0.5) * (1.0 - bias_strength) + angle_diff * bias_strength;
-        
+
         // Normalize the target steering angle to be between -PI and PI
         probe.target_steering_angle = (probe.target_steering_angle + PI) % (2.0 * PI) - PI;
     }
@@ -151,7 +151,8 @@ fn update_probe(mut q_probes: Query<(&mut Probe, &mut Transform)>, time: Res<Tim
 fn update_probe_detections(
     mut q_probes: Query<(Entity, &Transform, &mut ProbeDetection), With<Probe>>,
 ) {
-    let probes: Vec<(Entity, Transform)> = q_probes.iter().map(|(e, t, _)| (e, t.clone())).collect();
+    let probes: Vec<(Entity, Transform)> =
+        q_probes.iter().map(|(e, t, _)| (e, t.clone())).collect();
 
     for (entity, transform, mut detection) in q_probes.iter_mut() {
         detection.detected_entities.clear();
@@ -171,7 +172,9 @@ fn update_probe_detections(
                     fov_radius,
                     fov_angle,
                 ) {
-                    detection.detected_entities.push((*other_entity, other_position));
+                    detection
+                        .detected_entities
+                        .push((*other_entity, other_position));
                 }
             }
         }
@@ -206,6 +209,9 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_systems(Startup, startup)
         .add_systems(Update, (update_probe, update_probe_detections, draw_ui))
-        .add_systems(Update, update_probe_steering.run_if(on_timer(Duration::from_millis(3000))))
+        .add_systems(
+            Update,
+            update_probe_steering.run_if(on_timer(Duration::from_millis(3000))),
+        )
         .run();
 }

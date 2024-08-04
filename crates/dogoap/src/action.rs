@@ -28,7 +28,6 @@ impl Hash for Action {
 }
 
 impl Action {
-
     pub fn new(key: &str) -> Self {
         Self {
             key: key.to_string(),

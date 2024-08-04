@@ -108,11 +108,10 @@ fn setup(mut commands: Commands) {
                 Compare::Equals(Datum::Enum(Item::Nothing as usize)),
             )
             .with_effect(
-                Effect::new(&PickupLemonade::key())
-                    .with_mutator(Mutator::Set(
-                        CarryingItem::key(),
-                        Datum::Enum(Item::Lemonade as usize),
-                    )),
+                Effect::new(&PickupLemonade::key()).with_mutator(Mutator::Set(
+                    CarryingItem::key(),
+                    Datum::Enum(Item::Lemonade as usize),
+                )),
                 1,
             );
 
@@ -214,17 +213,15 @@ fn handle_pickup_lemonade(
                     state.0 = Item::Lemonade as usize;
                     commands.entity(entity).remove::<PickupLemonade>();
                     progresses.remove(&entity);
-                    
                 } else {
                     // In progress...
                     println!("Pickup Progress: {}", progress.fraction());
                 }
-            },
+            }
             None => {
                 progresses.insert(entity, Timer::from_seconds(1.0, TimerMode::Once));
             }
         }
-
     }
 }
 
@@ -238,9 +235,8 @@ fn handle_drink_lemonade(
         match progresses.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
-
                     state.0 = Item::Nothing as usize;
-                    thirst.0 = (thirst.0 - 5.0).max(0.0);                    
+                    thirst.0 = (thirst.0 - 5.0).max(0.0);
 
                     commands.entity(entity).remove::<DrinkLemonade>();
                     progresses.remove(&entity);
@@ -248,12 +244,11 @@ fn handle_drink_lemonade(
                     // In progress...
                     println!("Drink Progress: {}", progress.fraction());
                 }
-            },
+            }
             None => {
                 progresses.insert(entity, Timer::from_seconds(1.0, TimerMode::Once));
             }
         }
-
     }
 }
 
@@ -284,7 +279,8 @@ fn draw_state_debug(
 
         let mut current_action = "Idle";
 
-        let (drink_lemonade_action, pickup_lemonade_action) = q_customer_actions.get(entity).unwrap();
+        let (drink_lemonade_action, pickup_lemonade_action) =
+            q_customer_actions.get(entity).unwrap();
 
         if drink_lemonade_action.is_some() {
             current_action = "Drinking Lemonade";

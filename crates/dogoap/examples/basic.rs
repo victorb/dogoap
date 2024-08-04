@@ -15,10 +15,7 @@ fn main() {
         options: vec![(
             Effect {
                 action: "eat".to_string(),
-                mutators: vec![Mutator::Set(
-                    "is_hungry".to_string(),
-                    Datum::Bool(false),
-                )],
+                mutators: vec![Mutator::Set("is_hungry".to_string(), Datum::Bool(false))],
                 state: LocalState::new(),
             },
             1,

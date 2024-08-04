@@ -8,7 +8,7 @@ pub enum Datum {
     Bool(bool),
     I64(i64),
     F64(f64),
-    Enum(usize)
+    Enum(usize),
 }
 
 impl Hash for Datum {
@@ -40,10 +40,22 @@ impl Eq for Datum {}
 impl Datum {
     pub fn distance(&self, other: &Datum) -> u64 {
         match (self, other) {
-            (Datum::Bool(a), Datum::Bool(b)) => if a == b { 0 } else { 1 },
+            (Datum::Bool(a), Datum::Bool(b)) => {
+                if a == b {
+                    0
+                } else {
+                    1
+                }
+            }
             (Datum::I64(a), Datum::I64(b)) => (a - b).abs() as u64,
             (Datum::F64(a), Datum::F64(b)) => (a - b).abs() as u64,
-            (Datum::Enum(a), Datum::Enum(b)) => if a == b { 0 } else { 1 },
+            (Datum::Enum(a), Datum::Enum(b)) => {
+                if a == b {
+                    0
+                } else {
+                    1
+                }
+            }
             _ => panic!("Cannot calculate distance between different Datum types"),
         }
     }
@@ -75,7 +87,10 @@ impl Add for &Datum {
         match (self, other) {
             (Datum::I64(a), Datum::I64(b)) => Datum::I64(a + b),
             (Datum::F64(a), Datum::F64(b)) => Datum::F64(a + b),
-            _ => panic!("Unsupported addition between Datum variants, {:?} - {:?}", self, other),
+            _ => panic!(
+                "Unsupported addition between Datum variants, {:?} - {:?}",
+                self, other
+            ),
         }
     }
 }
@@ -96,7 +111,10 @@ impl Sub for &Datum {
         match (self, other) {
             (Datum::I64(a), Datum::I64(b)) => Datum::I64(a - b),
             (Datum::F64(a), Datum::F64(b)) => Datum::F64(a - b),
-            _ => panic!("Unsupported negation between Datum variants, {:?} - {:?}", self, other),
+            _ => panic!(
+                "Unsupported negation between Datum variants, {:?} - {:?}",
+                self, other
+            ),
         }
     }
 }
@@ -113,23 +131,19 @@ impl Sub for Datum {
 impl AddAssign for Datum {
     fn add_assign(&mut self, rhs: Self) {
         match self {
-            Self::I64(ref mut v1) => {
-                match rhs {
-                    Self::I64(v2) => {
-                        *v1 += v2;
-                    },
-                    _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs)
+            Self::I64(ref mut v1) => match rhs {
+                Self::I64(v2) => {
+                    *v1 += v2;
                 }
+                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
             },
-            Self::F64(ref mut v1) => {
-                match rhs {
-                    Self::F64(v2) => {
-                        *v1 += v2;
-                    },
-                    _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs)
+            Self::F64(ref mut v1) => match rhs {
+                Self::F64(v2) => {
+                    *v1 += v2;
                 }
+                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
             },
-            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs)
+            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
         }
     }
 }
@@ -137,23 +151,19 @@ impl AddAssign for Datum {
 impl SubAssign for Datum {
     fn sub_assign(&mut self, rhs: Self) {
         match self {
-            Self::I64(ref mut v1) => {
-                match rhs {
-                    Self::I64(v2) => {
-                        *v1 -= v2;
-                    },
-                    _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs)
+            Self::I64(ref mut v1) => match rhs {
+                Self::I64(v2) => {
+                    *v1 -= v2;
                 }
+                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
             },
-            Self::F64(ref mut v1) => {
-                match rhs {
-                    Self::F64(v2) => {
-                        *v1 -= v2;
-                    },
-                    _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs)
+            Self::F64(ref mut v1) => match rhs {
+                Self::F64(v2) => {
+                    *v1 -= v2;
                 }
+                _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
             },
-            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs)
+            _ => panic!("Unimplemented! Tried to remove {:?} from {:?}", self, rhs),
         }
     }
 }

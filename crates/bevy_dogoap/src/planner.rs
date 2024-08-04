@@ -117,8 +117,8 @@ pub fn update_planner_local_state(
         for component in components {
             planner
                 .state
-                .data
-                .insert(component.field_key(), component.field_value());
+    .data
+    .insert(component.field_key(), component.field_value());
         }
     }
 
@@ -132,29 +132,28 @@ pub fn create_planner_tasks(
     for (entity, planner) in query.iter() {
         if planner.always_plan {
             match planner.current_goal.clone() {
-                // TODO shouldn't have clone here
-                Some(goal) => {
-                    let state = planner.state.clone();
-                    let actions = planner.actions_for_dogoap.clone();
-                    let task = thread_pool.spawn(async move {
-                        let start = Instant::now();
-                        
-                        // WARN this is the part that can sometimes be slow and why we use AsyncComputePool
-                        let plan = make_plan(&state, &actions[..], &goal);
-                        let duration_ms = start.elapsed().as_millis();
-                        
-                        if duration_ms > 10 {
-                            let steps = plan.clone().expect("plan was empty?!").0.len(); // Not very clever to clone if things are slow?
-                            warn!("Planning duration for Entity {entity} was {duration_ms}ms for {steps} steps");
-                        }
-                        
-                        plan
-                    });
-                    commands.entity(entity).insert((IsPlanning, ComputePlan(task)));
-                }
-                None => {}
-            }
+             Some(goal) => {
+                let state = planner.state.clone();
+                let actions = planner.actions_for_dogoap.clone();
+                let task = thread_pool.spawn(async move {
+                    let start = Instant::now();
+                    
+                    // WARN this is the part that can sometimes be slow and why we use AsyncComputePool
+                    let plan = make_plan(&state, &actions[..], &goal);
+                    let duration_ms = start.elapsed().as_millis();
+                    
+                    if duration_ms > 10 {
+                        let steps = plan.clone().expect("plan was empty?!").0.len(); // Not very clever to clone if things are slow?
+                        warn!("Planning duration for Entity {entity} was {duration_ms}ms for {steps} steps");
+                    }
+                    
+                    plan
+                });
+                commands.entity(entity).insert((IsPlanning, ComputePlan(task)));
+            },
+            None => {}
         }
+    }
     }
 }
 
@@ -172,7 +171,7 @@ pub fn handle_planner_tasks(
                         Some(first_effect) => {
                             let action_name = first_effect.action.clone();
 
-                            let found_action = planner.actions_map.get(&action_name).expect(&format!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
+                            let found_action = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
 
                             if planner.current_action.is_some()
                                 && Some(found_action) != planner.current_action.as_ref()

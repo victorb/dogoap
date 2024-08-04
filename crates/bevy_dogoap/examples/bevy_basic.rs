@@ -28,7 +28,6 @@ struct EatAction;
 struct SleepAction;
 
 fn startup(mut commands: Commands) {
-
     // This is the goal we want the planner to help us reach
     let goal = create_goal!(
         (IsHungry, Compare::Equals, Datum::Bool(false)),
@@ -62,7 +61,6 @@ fn startup(mut commands: Commands) {
     // We create the instance of our planner with our initial state, our goals and finally the
     // possible actions
     let planner = Planner::new(initial_state, vec![goal], actions_map);
-
 
     // Next we need to add all the DatumComponent we've created
     // this function helps us do just that a tiny bit easier, it'll insert all registered components
