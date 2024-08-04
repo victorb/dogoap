@@ -47,7 +47,7 @@ impl Datum {
                     1
                 }
             }
-            (Datum::I64(a), Datum::I64(b)) => (a - b).abs() as u64,
+            (Datum::I64(a), Datum::I64(b)) => (a - b).unsigned_abs(),
             (Datum::F64(a), Datum::F64(b)) => (a - b).abs() as u64,
             (Datum::Enum(a), Datum::Enum(b)) => {
                 if a == b {
