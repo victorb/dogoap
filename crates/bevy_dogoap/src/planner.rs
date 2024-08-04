@@ -6,7 +6,7 @@ use bevy::tasks::futures_lite::future;
 use bevy::tasks::{AsyncComputeTaskPool, Task};
 use dogoap::prelude::*;
 
-use crate::{InserterComponent, DatumComponent};
+use crate::{DatumComponent, InserterComponent};
 
 type ActionsMap = HashMap<String, Action>;
 type ActionsComponentsMap = HashMap<String, Box<dyn InserterComponent>>;
@@ -117,11 +117,10 @@ pub fn update_planner_local_state(
         for component in components {
             planner
                 .state
-    .data
-    .insert(component.field_key(), component.field_value());
+                .data
+                .insert(component.field_key(), component.field_value());
         }
     }
-
 }
 
 pub fn create_planner_tasks(
@@ -136,21 +135,23 @@ pub fn create_planner_tasks(
                 let actions = planner.actions_for_dogoap.clone();
                 let task = thread_pool.spawn(async move {
                     let start = Instant::now();
-                    
+
                     // WARN this is the part that can sometimes be slow and why we use AsyncComputePool
                     let plan = make_plan(&state, &actions[..], &goal);
                     let duration_ms = start.elapsed().as_millis();
-                    
+
                     if duration_ms > 10 {
                         let steps = plan.clone().expect("plan was empty?!").0.len(); // Not very clever to clone if things are slow?
                         warn!("Planning duration for Entity {entity} was {duration_ms}ms for {steps} steps");
                     }
-                    
+
                     plan
                 });
-                commands.entity(entity).insert((IsPlanning, ComputePlan(task)));
+                commands
+                    .entity(entity)
+                    .insert((IsPlanning, ComputePlan(task)));
             }
-    }
+        }
     }
 }
 
