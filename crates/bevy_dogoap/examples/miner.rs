@@ -30,7 +30,7 @@ const HAS_METAL_KEY: &str = "has_metal";
 const GOLD_KEY: &str = "gold_amount";
 // const IS_HOUSE_UPGRADED_KEY: &str = "is_house_upgraded";
 
-#[derive(Clone, Default, Reflect)]
+#[derive(Clone, Default, Reflect, Copy, EnumDatum)]
 enum Location {
     #[default]
     House,
@@ -171,13 +171,13 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         let goals = vec![goal.clone()];
 
         let eat_action = Action::new(EAT_ACTION)
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_mushroom))
+            .with_precondition(LOCATION_KEY, Compare::Equals(Location::Mushroom.datum()))
             .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
             .with_effect(
                 Effect::new(EAT_ACTION)
                     .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(25.0)))
                     .with_mutator(Mutator::Decrement(ENERGY_KEY.to_string(), Datum::F64(5.0)))
-                    .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
+                    .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), Location::Outside.datum())),
                 1,
             );
 

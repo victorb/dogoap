@@ -8,7 +8,6 @@ use syn::{parse_macro_input, Data, DeriveInput, Fields};
 pub fn datum_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    // Assuming struct with a single bool field for simplicity
     let name = &input.ident;
     let snake_case_name = to_snake_case(&name.to_string());
 
@@ -69,8 +68,6 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(ActionComponent)]
 pub fn action_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-
-    // Assuming struct with a single bool field for simplicity
     let name = &input.ident;
     let snake_case_name = to_snake_case(&name.to_string());
 
@@ -81,6 +78,23 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
             }
         }
     };
+    gen.into()
+}
+
+
+#[proc_macro_derive(EnumDatum)]
+pub fn enum_datum_derive(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    let name = &input.ident;
+
+    let gen = quote! {
+        impl EnumDatum for #name {
+            fn datum(self) -> Datum {
+                Datum::Enum(self as usize)
+            }
+        }
+    };
+
     gen.into()
 }
 

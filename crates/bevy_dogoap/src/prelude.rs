@@ -8,7 +8,7 @@ pub use dogoap::prelude::{
 
 pub use crate::{
     create_action_map, create_goal, create_state, planner::IsPlanning, planner::Planner,
-    register_components, ActionComponent, DatumComponent, DogoapPlugin,
+    register_components, ActionComponent, DatumComponent, DogoapPlugin, EnumDatum
 };
 
-pub use macros::{ActionComponent, DatumComponent};
+pub use macros::{ActionComponent, DatumComponent, EnumDatum};

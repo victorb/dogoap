@@ -55,6 +55,10 @@ pub trait ActionComponent: Send + Sync {
     fn key() -> String;
 }
 
+pub trait EnumDatum: Send + Sync {
+    fn datum(self) -> Datum;
+}
+
 #[macro_export]
 macro_rules! create_action_map {
     ($(($key:expr, $action:expr, $marker:ty)),* $(,)?) => {{
