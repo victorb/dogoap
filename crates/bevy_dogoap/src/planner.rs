@@ -131,8 +131,7 @@ pub fn create_planner_tasks(
     let thread_pool = AsyncComputeTaskPool::get();
     for (entity, planner) in query.iter() {
         if planner.always_plan {
-            match planner.current_goal.clone() {
-             Some(goal) => {
+            if let Some(goal) = planner.current_goal.clone() {
                 let state = planner.state.clone();
                 let actions = planner.actions_for_dogoap.clone();
                 let task = thread_pool.spawn(async move {
@@ -150,9 +149,7 @@ pub fn create_planner_tasks(
                     plan
                 });
                 commands.entity(entity).insert((IsPlanning, ComputePlan(task)));
-            },
-            None => {}
-        }
+            }
     }
     }
 }
