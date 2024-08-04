@@ -46,13 +46,6 @@ impl Hash for Compare {
     }
 }
 
-// fn compare_values(key: &str, value: &Value, state: &LocalState, comparison: &Compare) -> bool {
-//     match comparison {
-//         Compare::Equals(v) => state.fields.get(key) == Some(v),
-//         Compare::GreaterThanEquals(v) => state.fields.get(key) >= Some(v),
-//     }
-// }
-
 pub fn compare_values(comparison: &Compare, value: &Field) -> bool {
     match comparison {
         Compare::Equals(v) => value == v,
@@ -74,10 +67,6 @@ pub fn check_preconditions(state: &LocalState, action: &Action) -> bool {
                 .unwrap_or_else(|| panic!("Couldn't find key {:#?} in LocalState", key));
             compare_values(value, state_value)
         })
-        // pre.iter().all(|(key, value)| match value {
-        //     Compare::Equals(v) => state.fields.get(key) == Some(v),
-        //     Compare::GreaterThanEquals(v) => state.fields.get(key) >= Some(v),
-        // })
     })
 }
 

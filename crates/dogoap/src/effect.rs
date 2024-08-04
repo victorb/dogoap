@@ -7,7 +7,7 @@ pub struct Effect {
     pub action: String,
     pub argument: Option<Field>,
     pub mutators: Vec<Mutator>,
-    pub state: LocalState, // TODO do we really need LocalState here?
+    pub state: LocalState,
 }
 
 impl Effect {

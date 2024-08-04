@@ -1,5 +1,4 @@
 use dogoap::prelude::*;
-use dogoap::planner::visualize_plan;
 
 fn main() {
     let start = LocalState::new()
@@ -44,7 +43,7 @@ fn main() {
 
     print_plan(plan.clone().unwrap());
 
-    visualize_plan(plan.unwrap(), "my-plan.dot");
+    // visualize_plan(plan.unwrap(), "my-plan.dot");
 
     assert_eq!(expected_state, effects.last().unwrap().state);
 }

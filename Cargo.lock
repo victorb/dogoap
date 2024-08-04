@@ -1752,7 +1752,6 @@ dependencies = [
  "bevy_reflect",
  "log",
  "pathfinding",
- "petgraph",
  "serde_json",
 ]
 
