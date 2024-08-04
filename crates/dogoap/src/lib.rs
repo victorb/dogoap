@@ -4,7 +4,7 @@ mod effect;
 mod field;
 mod goal;
 mod mutator;
-mod planner;
+pub mod planner;
 mod simple;
 mod state;
 

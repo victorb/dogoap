@@ -185,6 +185,8 @@ fn handle_sleep_action(
 
 mod test {
 
+    use bevy_dogoap::{make_plan, print_plan};
+
     use super::*;
 
     // Test utils

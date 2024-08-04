@@ -345,7 +345,8 @@ pub fn create_planner_tasks(
                         let duration_ms = start.elapsed().as_millis();
                         
                         if duration_ms > 10 {
-                            warn!("Planning duration for Entity {entity} was {duration_ms}ms");
+                            let steps = plan.clone().expect("plan was empty?!").0.len(); // Not very clever to clone if things are slow...
+                            warn!("Planning duration for Entity {entity} was {duration_ms}ms for {steps} steps");
                         }
                         
                         plan
@@ -378,7 +379,7 @@ pub fn handle_planner_tasks(
                             let action_name = first_effect.action.clone();
                             // debug!("First action found: {:?}", action_name);
 
-                            let found_action = planner.actions_map.get(&action_name).unwrap();
+                            let found_action = planner.actions_map.get(&action_name).expect(&format!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
 
                             if planner.current_action.is_some()
                                 && Some(found_action) != planner.current_action.as_ref()

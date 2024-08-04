@@ -148,7 +148,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
-    for i in 0..1 {
+    for i in 0..3 {
         // To spawn the miner+AI:
         // First we define our initial state
         // let state = LocalState::new()
@@ -162,11 +162,11 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
         // Then we decide a goal of not being hungry nor tired
         let goal = Goal::new()
-            // .with_req(HUNGER_KEY, Compare::LessThanEquals(Field::F64(50.0)))
-            // .with_req(ENERGY_KEY, Compare::GreaterThanEquals(Field::F64(50.0)))
+            .with_req(HUNGER_KEY, Compare::LessThanEquals(Field::F64(50.0)))
+            .with_req(ENERGY_KEY, Compare::GreaterThanEquals(Field::F64(50.0)))
             // .with_req(HAS_ORE_KEY, Compare::Equals(Field::Bool(true)))
             // .with_req(HAS_METAL_KEY, Compare::Equals(Field::from(true)))
-            .with_req(GOLD_KEY, Compare::GreaterThanEquals(Field::I64(3)));
+            .with_req(GOLD_KEY, Compare::GreaterThanEquals(Field::I64(10)));
 
         let goals = vec![goal.clone()];
 
@@ -187,20 +187,29 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Field::from(50.0))
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_house));
 
-        let mine_ore_action = simple_action(MINE_ORE_ACTION, HAS_ORE_KEY, Field::from(true))
+        let mine_ore_action = Action::new(MINE_ORE_ACTION)
             .with_precondition(
                 ENERGY_KEY,
                 Compare::GreaterThanEquals(Field::from_f64(50.0)),
             )
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_ore));
+            .with_precondition(
+                HUNGER_KEY,
+                Compare::LessThanEquals(Field::from_f64(50.0)),
+            )
+            .with_precondition(LOCATION_KEY, Compare::Equals(loc_ore))
+            .with_effect(
+                Effect::new(MINE_ORE_ACTION)
+                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Field::from(true)))
+                    .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Field::F64(15.0)))
+                    .with_mutator(Mutator::Increment(ENERGY_KEY.to_string(), Field::F64(50.0))),
+                2,
+            );
 
         let smelt_ore_action = Action::new(SMELT_ORE_ACTION)
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_smelter))
             .with_precondition(HAS_ORE_KEY, Compare::Equals(Field::from_bool(true)))
-            .with_precondition(
-                ENERGY_KEY,
-                Compare::GreaterThanEquals(Field::from_f64(1.0)),
-            )
+            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Field::F64(25.0)))
+            .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Field::F64(50.0)))
             .with_effect(
                 Effect::new(SMELT_ORE_ACTION)
                     .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Field::Bool(true)))
@@ -630,7 +639,7 @@ fn handle_sleep_action(
     let mut rng = rand::thread_rng();
     for (entity, _action, mut energy, mut planner) in query.iter_mut() {
         // Stop planning while we sleep
-        planner.always_plan = false;
+        // planner.always_plan = false;
         let r = rng.gen_range(5.0..20.0);
         let val: f64 = r * time.delta_seconds_f64();
         energy.0 += val;
@@ -638,7 +647,7 @@ fn handle_sleep_action(
             commands.entity(entity).remove::<SleepAction>();
             commands.entity(entity).insert(GoToOutsideAction); // We can manually control actions as well if needed
             energy.0 = 100.0;
-            planner.always_plan = true;
+            // planner.always_plan = true;
         }
     }
 }

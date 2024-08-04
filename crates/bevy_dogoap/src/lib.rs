@@ -80,6 +80,26 @@ macro_rules! create_action_map {
 }
 
 #[macro_export]
+macro_rules! create_action_map_v2 {
+    ($(($marker:ty, $action:expr)),* $(,)?) => {{
+        use std::collections::HashMap;
+        use bevy_dogoap::InserterComponent;
+        let map: HashMap<String, (Action, Box<dyn InserterComponent>)> = HashMap::from([
+            $(
+                (
+                    <$marker>::key(),
+                    (
+                        $action.clone(),
+                        Box::new(<$marker>::default()) as Box<dyn InserterComponent>,
+                    ),
+                )
+            ),*
+        ]);
+        map
+    }};
+}
+
+#[macro_export]
 macro_rules! create_state {
     ($( $x:expr ),*) => {
         {

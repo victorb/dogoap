@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use dogoap::prelude::*;
 
 // One action that sets one field
@@ -534,7 +536,11 @@ fn test_reverse_strategy() {
 
     let actions: Vec<Action> = vec![eat_action];
 
-    let plan = get_effects_from_plan(make_plan_with_strategy(PlanningStrategy::GoalToStart, &start, &actions[..], &goal).unwrap().0);
+    let plan = get_effects_from_plan(
+        make_plan_with_strategy(PlanningStrategy::GoalToStart, &start, &actions[..], &goal)
+            .unwrap()
+            .0,
+    );
     assert_eq!(1, plan.len());
 
     let cons = plan.get(0).unwrap();
