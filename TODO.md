@@ -1,9 +1,9 @@
 ## Examples
 
-- [ ] bevy_dogoap example should use builders
+- [X] bevy_dogoap example should use builders
 - [X] Make sure we can increment I64 just as an example
-- [ ] Maybe figure out `Sensors` or alike? Be able to change goal depending on how closer the player is - Make this into an example
-- [ ] Show how Observers could be used to handle cancelled/successful Actions
+- [X] Maybe figure out `Sensors` or alike? Be able to change goal depending on how closer the player is - Make this into an example
+- [X] Show how Observers could be used to handle cancelled/successful Actions
 
 ## Compare
 
@@ -18,12 +18,14 @@
 
 ## Actions
 
-- [ ] Arguments to Actions?
+- [X] Arguments to Actions?
+    - Nope
 
 ## Field
 
-- [] Rename `Field`, it's actually a Value and Field has a meaning in Rust already
-- [] `From` API is a footgun that doesn't handle type safety very well, mixing Fields will make the compiler alright, but panic on runtime...
+- [ ] Rename `Field`, it's actually a Value and Field has a meaning in Rust already
+- [ ] `From` API is a footgun that doesn't handle type safety very well, mixing Fields will make the compiler alright, but panic on runtime...
+- [ ] Be able to create Field from Enum without using `usize`
 
 ## UX
 
