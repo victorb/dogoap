@@ -148,7 +148,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
-    for i in 0..3 {
+    for i in 0..1 {
         // To spawn the miner+AI:
         // First we define our initial state
         // let state = LocalState::new()
@@ -215,7 +215,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                     .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Field::Bool(true)))
                     .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Field::Bool(false))),
                 // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
-                1,
+                3,
             );
 
         let sell_metal_action = Action::new(SELL_METAL_ACTION)
