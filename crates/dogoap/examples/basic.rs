@@ -5,9 +5,9 @@ use dogoap::prelude::*;
 // but shows the data structures needed for the planner
 
 fn main() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::from_bool(true));
+    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::from_bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
 
     let eat_action = Action {
         key: "eat".to_string(),
@@ -17,7 +17,7 @@ fn main() {
                 action: "eat".to_string(),
                 mutators: vec![Mutator::Set(
                     "is_hungry".to_string(),
-                    Datum::from_bool(false),
+                    Datum::Bool(false),
                 )],
                 state: LocalState::new(),
             },

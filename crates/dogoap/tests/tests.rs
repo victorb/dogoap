@@ -5,11 +5,11 @@ use dogoap::prelude::*;
 // One action that sets one field
 #[test]
 fn test_basic_bool_setting() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::from_bool(true));
+    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::from_bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
 
-    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::from_bool(false));
+    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::Bool(false));
 
     let eat_consequence = Effect {
         action: "eat".to_string(),
@@ -33,18 +33,18 @@ fn test_basic_bool_setting() {
     assert_eq!(1, cons.mutators.len());
     assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
 
-    let expected_state = LocalState::new().with_datum("is_hungry", Datum::from_bool(false));
+    let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
     assert_eq!(expected_state, cons.state);
 }
 
 // Anything that implements Reflect could be a key
 #[test]
 fn test_action_keys() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::from_bool(true));
+    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::from_bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
 
-    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::from_bool(false));
+    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::Bool(false));
 
     let eat_consequence = Effect {
         action: "eat".to_string(),
@@ -68,18 +68,18 @@ fn test_action_keys() {
     assert_eq!(1, cons.mutators.len());
     assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
 
-    let expected_state = LocalState::new().with_datum("is_hungry", Datum::from_bool(false));
+    let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
     assert_eq!(expected_state, cons.state);
 }
 
 // // The state is already what we need!
 #[test]
 fn test_no_actions_needed() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::from_bool(false));
+    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::from_bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
 
-    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::from_bool(false));
+    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::Bool(false));
 
     let eat_consequence = Effect {
         action: "eat".to_string(),
@@ -99,20 +99,20 @@ fn test_no_actions_needed() {
     assert_eq!(1, plan.len());
     assert_eq!(0, plan_cost);
 
-    let expected_state = LocalState::new().with_datum("is_hungry", Datum::from_bool(false));
+    let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
     assert_eq!(expected_state, plan.first().unwrap().state().clone());
 }
 //
 // Shorthand for one action that sets one field
 #[test]
 fn test_simple_action() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::from_bool(true));
-    let expected_state = LocalState::new().with_datum("is_hungry", Datum::from_bool(false));
+    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
+    let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::from_bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
 
-    let eat_action = simple_action("eat", "is_hungry", Datum::from_bool(false));
-    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::from_bool(false));
+    let eat_action = simple_action("eat", "is_hungry", Datum::Bool(false));
+    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::Bool(false));
 
     let actions: Vec<Action> = vec![eat_action];
 
@@ -131,19 +131,19 @@ fn test_simple_action() {
 #[test]
 fn test_two_bools() {
     let start = LocalState::new()
-        .with_datum("is_hungry", Datum::from_bool(true))
-        .with_datum("is_tired", Datum::from_bool(true));
+        .with_datum("is_hungry", Datum::Bool(true))
+        .with_datum("is_tired", Datum::Bool(true));
 
     let expected_state = LocalState::new()
-        .with_datum("is_hungry", Datum::from_bool(false))
-        .with_datum("is_tired", Datum::from_bool(false));
+        .with_datum("is_hungry", Datum::Bool(false))
+        .with_datum("is_tired", Datum::Bool(false));
 
     let goal = Goal::new()
-        .with_req("is_hungry", Compare::Equals(Datum::from_bool(false)))
-        .with_req("is_tired", Compare::Equals(Datum::from_bool(false)));
+        .with_req("is_hungry", Compare::Equals(Datum::Bool(false)))
+        .with_req("is_tired", Compare::Equals(Datum::Bool(false)));
 
-    let eat_action = simple_action("eat", "is_hungry", Datum::from_bool(false));
-    let sleep_action = simple_action("sleep", "is_tired", Datum::from_bool(false));
+    let eat_action = simple_action("eat", "is_hungry", Datum::Bool(false));
+    let sleep_action = simple_action("sleep", "is_tired", Datum::Bool(false));
 
     let actions: Vec<Action> = vec![eat_action, sleep_action];
 
@@ -167,45 +167,45 @@ fn test_two_bools() {
 #[test]
 fn test_four_bools() {
     let start = LocalState::new()
-        .with_datum("is_hungry", Datum::from_bool(true))
-        .with_datum("is_tired", Datum::from_bool(true))
-        .with_datum("is_fit", Datum::from_bool(false))
-        .with_datum("is_dirty", Datum::from_bool(false));
+        .with_datum("is_hungry", Datum::Bool(true))
+        .with_datum("is_tired", Datum::Bool(true))
+        .with_datum("is_fit", Datum::Bool(false))
+        .with_datum("is_dirty", Datum::Bool(false));
 
     // We want to be fit, but not hungry, tired or dirty
     let goal = Goal::new()
-        .with_req("is_hungry", Compare::Equals(Datum::from_bool(false)))
-        .with_req("is_tired", Compare::Equals(Datum::from_bool(false)))
-        .with_req("is_fit", Compare::Equals(Datum::from_bool(true)))
-        .with_req("is_dirty", Compare::Equals(Datum::from_bool(false)));
+        .with_req("is_hungry", Compare::Equals(Datum::Bool(false)))
+        .with_req("is_tired", Compare::Equals(Datum::Bool(false)))
+        .with_req("is_fit", Compare::Equals(Datum::Bool(true)))
+        .with_req("is_dirty", Compare::Equals(Datum::Bool(false)));
 
     // Actions
     // eat => not hungry
     // sleep => not tired but now hungry
     // train => fit but now dirty and tired
     // shower => not dirty but now tired
-    let eat_action = simple_action("eat", "is_hungry", Datum::from_bool(false));
+    let eat_action = simple_action("eat", "is_hungry", Datum::Bool(false));
 
     let sleep_action = simple_multi_mutate_action(
         "sleep",
         vec![
-            ("is_tired", Datum::from_bool(false)),
-            ("is_hungry", Datum::from_bool(true)),
+            ("is_tired", Datum::Bool(false)),
+            ("is_hungry", Datum::Bool(true)),
         ],
     );
     let train_action = simple_multi_mutate_action(
         "train",
         vec![
-            ("is_tired", Datum::from_bool(true)),
-            ("is_dirty", Datum::from_bool(true)),
-            ("is_fit", Datum::from_bool(true)),
+            ("is_tired", Datum::Bool(true)),
+            ("is_dirty", Datum::Bool(true)),
+            ("is_fit", Datum::Bool(true)),
         ],
     );
     let shower_action = simple_multi_mutate_action(
         "shower",
         vec![
-            ("is_tired", Datum::from_bool(true)),
-            ("is_dirty", Datum::from_bool(false)),
+            ("is_tired", Datum::Bool(true)),
+            ("is_dirty", Datum::Bool(false)),
         ],
     );
 
@@ -233,10 +233,10 @@ fn test_four_bools() {
     assert_eq!(1, fourth_cons.mutators.len());
 
     let expected_state = LocalState::new()
-        .with_datum("is_hungry", Datum::from_bool(false))
-        .with_datum("is_tired", Datum::from_bool(false))
-        .with_datum("is_fit", Datum::from_bool(true))
-        .with_datum("is_dirty", Datum::from_bool(false));
+        .with_datum("is_hungry", Datum::Bool(false))
+        .with_datum("is_tired", Datum::Bool(false))
+        .with_datum("is_fit", Datum::Bool(true))
+        .with_datum("is_dirty", Datum::Bool(false));
     assert_eq!(expected_state, cons.last().unwrap().state);
 }
 
@@ -249,10 +249,10 @@ enum TestLocation {
 
 #[test]
 fn test_enums() {
-    let loc_house = Datum::from_enum(TestLocation::House as usize);
-    let loc_outside = Datum::from_enum(TestLocation::Outside as usize);
-    let loc_market = Datum::from_enum(TestLocation::Market as usize);
-    let loc_ramen = Datum::from_enum(TestLocation::RamenShop as usize);
+    let loc_house = Datum::Enum(TestLocation::House as usize);
+    let loc_outside = Datum::Enum(TestLocation::Outside as usize);
+    let loc_market = Datum::Enum(TestLocation::Market as usize);
+    let loc_ramen = Datum::Enum(TestLocation::RamenShop as usize);
 
     let start = LocalState::new().with_datum("at_location", loc_house.clone());
 
@@ -296,30 +296,30 @@ fn test_enums() {
 #[test]
 fn test_preconditions() {
     let start = LocalState::new()
-        .with_datum("is_hungry", Datum::from_bool(true))
-        .with_datum("is_tired", Datum::from_bool(true));
+        .with_datum("is_hungry", Datum::Bool(true))
+        .with_datum("is_tired", Datum::Bool(true));
 
     let expected_state = LocalState::new()
-        .with_datum("is_hungry", Datum::from_bool(false))
-        .with_datum("is_tired", Datum::from_bool(false));
+        .with_datum("is_hungry", Datum::Bool(false))
+        .with_datum("is_tired", Datum::Bool(false));
 
     let goal = Goal::new()
-        .with_req("is_hungry", Compare::Equals(Datum::from_bool(false)))
-        .with_req("is_tired", Compare::Equals(Datum::from_bool(false)));
+        .with_req("is_hungry", Compare::Equals(Datum::Bool(false)))
+        .with_req("is_tired", Compare::Equals(Datum::Bool(false)));
 
     let mut eat_action = simple_multi_mutate_action(
         "eat",
         vec![
-            ("is_hungry", Datum::from_bool(false)),
-            ("is_tired", Datum::from_bool(true)),
+            ("is_hungry", Datum::Bool(false)),
+            ("is_tired", Datum::Bool(true)),
         ],
     );
     add_preconditions(
         &mut eat_action,
-        vec![("is_tired", Compare::Equals(Datum::from_bool(false)))],
+        vec![("is_tired", Compare::Equals(Datum::Bool(false)))],
     );
 
-    let sleep_action = simple_action("sleep", "is_tired", Datum::from_bool(false));
+    let sleep_action = simple_action("sleep", "is_tired", Datum::Bool(false));
 
     let actions: Vec<Action> = vec![eat_action, sleep_action];
 
@@ -347,14 +347,14 @@ fn test_preconditions() {
 // We can use ints too!
 #[test]
 fn test_int_increment() {
-    let start = LocalState::new().with_datum("energy", Datum::from_i64(50));
-    let expected_state = LocalState::new().with_datum("energy", Datum::from_i64(100));
+    let start = LocalState::new().with_datum("energy", Datum::I64(50));
+    let expected_state = LocalState::new().with_datum("energy", Datum::I64(100));
 
-    let goal = Goal::new().with_req("energy", Compare::Equals(Datum::from_i64(100)));
+    let goal = Goal::new().with_req("energy", Compare::Equals(Datum::I64(100)));
 
     // TOOD should keep the `10 as 64` syntax with .from somehow
-    let eat_action = simple_increment_action("eat", "energy", Datum::from_i64(10));
-    let eat_mutator = Mutator::Increment("energy".to_string(), Datum::from_i64(10 as i64));
+    let eat_action = simple_increment_action("eat", "energy", Datum::I64(10));
+    let eat_mutator = Mutator::Increment("energy".to_string(), Datum::I64(10 as i64));
 
     let actions: Vec<Action> = vec![eat_action];
 
@@ -372,13 +372,13 @@ fn test_int_increment() {
 
 #[test]
 fn test_int_decrement() {
-    let start = LocalState::new().with_datum("hunger", Datum::from_i64(80 as i64));
-    let expected_state = LocalState::new().with_datum("hunger", Datum::from_i64(10 as i64));
+    let start = LocalState::new().with_datum("hunger", Datum::I64(80 as i64));
+    let expected_state = LocalState::new().with_datum("hunger", Datum::I64(10 as i64));
 
-    let goal = Goal::new().with_req("hunger", Compare::Equals(Datum::from_i64(10 as i64)));
+    let goal = Goal::new().with_req("hunger", Compare::Equals(Datum::I64(10 as i64)));
 
-    let eat_action = simple_decrement_action("eat", "hunger", Datum::from_i64(10 as i64));
-    let eat_mutator = Mutator::Decrement("hunger".to_string(), Datum::from_i64(10 as i64));
+    let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(10 as i64));
+    let eat_mutator = Mutator::Decrement("hunger".to_string(), Datum::I64(10 as i64));
 
     let actions: Vec<Action> = vec![eat_action];
 
@@ -396,13 +396,13 @@ fn test_int_decrement() {
 
 #[test]
 fn test_float_increment() {
-    let start = LocalState::new().with_datum("energy", Datum::from(50.0));
-    let expected_state = LocalState::new().with_datum("energy", Datum::from(100.0));
+    let start = LocalState::new().with_datum("energy", Datum::F64(50.0));
+    let expected_state = LocalState::new().with_datum("energy", Datum::F64(100.0));
 
-    let goal = Goal::new().with_req("energy", Compare::Equals(Datum::from(100.0)));
+    let goal = Goal::new().with_req("energy", Compare::Equals(Datum::F64(100.0)));
 
-    let eat_action = simple_increment_action("eat", "energy", Datum::from(10.0));
-    let eat_mutator = Mutator::Increment("energy".to_string(), Datum::from(10.0));
+    let eat_action = simple_increment_action("eat", "energy", Datum::F64(10.0));
+    let eat_mutator = Mutator::Increment("energy".to_string(), Datum::F64(10.0));
 
     let actions: Vec<Action> = vec![eat_action];
 
@@ -421,12 +421,12 @@ fn test_float_increment() {
 // GreaterThanEquals can be useful sometimes too!
 #[test]
 fn test_greater_than_equals() {
-    let start = LocalState::new().with_datum("energy", Datum::from(0));
-    let expected_state = LocalState::new().with_datum("energy", Datum::from(54));
+    let start = LocalState::new().with_datum("energy", Datum::I64(0));
+    let expected_state = LocalState::new().with_datum("energy", Datum::I64(54));
 
-    let goal = Goal::new().with_req("energy", Compare::GreaterThanEquals(Datum::from(50)));
+    let goal = Goal::new().with_req("energy", Compare::GreaterThanEquals(Datum::I64(50)));
 
-    let eat_action = simple_increment_action("eat", "energy", Datum::from(6));
+    let eat_action = simple_increment_action("eat", "energy", Datum::I64(6));
 
     let actions: Vec<Action> = vec![eat_action];
 
@@ -442,7 +442,7 @@ fn test_greater_than_equals() {
         assert_eq!("eat", cons.action);
         assert_eq!(1, cons.mutators.len());
         assert_eq!(
-            Mutator::Increment("energy".to_string(), Datum::from(6)),
+            Mutator::Increment("energy".to_string(), Datum::I64(6)),
             cons.mutators.get(0).unwrap().clone()
         );
     }
@@ -453,37 +453,37 @@ fn test_greater_than_equals() {
 #[test]
 fn test_long_plan() {
     let start = LocalState::new()
-        .with_datum("energy", Datum::from_i64(30))
-        .with_datum("hunger", Datum::from_i64(70))
-        .with_datum("gold", Datum::from_i64(0));
+        .with_datum("energy", Datum::I64(30))
+        .with_datum("hunger", Datum::I64(70))
+        .with_datum("gold", Datum::I64(0));
 
     let expected_state = LocalState::new()
-        .with_datum("energy", Datum::from_i64(50))
-        .with_datum("hunger", Datum::from_i64(50))
-        .with_datum("gold", Datum::from_i64(10));
+        .with_datum("energy", Datum::I64(50))
+        .with_datum("hunger", Datum::I64(50))
+        .with_datum("gold", Datum::I64(10));
 
-    let goal = Goal::new().with_req("gold", Compare::Equals(Datum::from_i64(10)));
+    let goal = Goal::new().with_req("gold", Compare::Equals(Datum::I64(10)));
 
     // TOOD should keep the `10 as 64` syntax with .from somehow
-    let sleep_action = simple_increment_action("sleep", "energy", Datum::from_i64(1));
+    let sleep_action = simple_increment_action("sleep", "energy", Datum::I64(1));
 
-    let eat_action = simple_decrement_action("eat", "hunger", Datum::from_i64(1))
-        .with_precondition("energy", Compare::GreaterThanEquals(Datum::from_i64(50)));
+    let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(1))
+        .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(50)));
 
-    let rob_people = simple_increment_action("rob", "gold", Datum::from_i64(1))
+    let rob_people = simple_increment_action("rob", "gold", Datum::I64(1))
         .with_effect(
             Effect {
                 action: "rob".to_string(),
                 mutators: vec![
-                    Mutator::Decrement("energy".to_string(), Datum::from_i64(20)),
-                    Mutator::Increment("hunger".to_string(), Datum::from_i64(20)),
+                    Mutator::Decrement("energy".to_string(), Datum::I64(20)),
+                    Mutator::Increment("hunger".to_string(), Datum::I64(20)),
                 ],
                 state: LocalState::default(),
             },
             1,
         )
-        .with_precondition("hunger", Compare::LessThanEquals(Datum::from_i64(50)))
-        .with_precondition("energy", Compare::GreaterThanEquals(Datum::from_i64(50)));
+        .with_precondition("hunger", Compare::LessThanEquals(Datum::I64(50)))
+        .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(50)));
 
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
@@ -503,13 +503,13 @@ fn test_long_plan() {
 #[test]
 #[should_panic]
 fn test_reverse_strategy() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::from_bool(true));
-    let expected_state = LocalState::new().with_datum("is_hungry", Datum::from_bool(false));
+    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
+    let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::from_bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
 
-    let eat_action = simple_action("eat", "is_hungry", Datum::from_bool(false));
-    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::from_bool(false));
+    let eat_action = simple_action("eat", "is_hungry", Datum::Bool(false));
+    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::Bool(false));
 
     let actions: Vec<Action> = vec![eat_action];
 

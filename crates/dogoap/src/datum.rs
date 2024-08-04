@@ -38,19 +38,6 @@ impl PartialEq for Datum {
 impl Eq for Datum {}
 
 impl Datum {
-    pub fn from_bool(value: bool) -> Self {
-        Datum::Bool(value)
-    }
-    pub fn from_i64(value: i64) -> Self {
-        Datum::I64(value)
-    }
-    pub fn from_f64(value: f64) -> Self {
-        Datum::F64(value)
-    }
-    pub fn from_enum(value: usize) -> Self {
-        Datum::Enum(value)
-    }
-
     pub fn distance(&self, other: &Datum) -> u64 {
         match (self, other) {
             (Datum::Bool(a), Datum::Bool(b)) => if a == b { 0 } else { 1 },
@@ -61,26 +48,6 @@ impl Datum {
         }
     }
 }
-
-impl From<bool> for Datum {
-    fn from(v: bool) -> Self {
-        Datum::Bool(v)
-    }
-}
-
-impl From<i64> for Datum {
-    fn from(v: i64) -> Self {
-        Datum::I64(v)
-    }
-}
-
-impl From<f64> for Datum {
-    fn from(v: f64) -> Self {
-        Datum::F64(v)
-    }
-}
-
-
 
 impl Display for Datum {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -195,51 +162,33 @@ impl SubAssign for Datum {
 mod test {
     use crate::prelude::*;
     #[test]
-    fn test_from_bool() {
-        let datum = Datum::from(true);
-        assert_eq!(datum, Datum::from_bool(true));
-    }
-
-    #[test]
-    fn test_from_i64() {
-        let datum = Datum::from(123 as i64);
-        assert_eq!(datum, Datum::from_i64(123 as i64));
-    }
-
-    #[test]
-    fn test_from_f64() {
-        let datum = Datum::from(123 as f64);
-        assert_eq!(datum, Datum::from_f64(123 as f64));
-    }
-
-    #[test]
     fn test_equality() {
-        assert_eq!(Datum::from(true), Datum::from_bool(true));
-        assert_eq!(Datum::from(666), Datum::from_i64(666));
-        assert_eq!(Datum::from(666.666), Datum::from_f64(666.666));
+        assert_eq!(Datum::Bool(true), Datum::Bool(true));
+        assert_eq!(Datum::I64(666), Datum::I64(666));
+        assert_eq!(Datum::F64(666.666), Datum::F64(666.666));
     }
 
     #[test]
     fn test_greater_than() {
         // Int
-        assert!(Datum::from(100) > Datum::from(10));
-        assert!(Datum::from(1) > Datum::from(0));
+        assert!(Datum::I64(100) > Datum::I64(10));
+        assert!(Datum::I64(1) > Datum::I64(0));
 
         // Float
-        assert!(Datum::from(1.2) > Datum::from(1.1));
+        assert!(Datum::F64(1.2) > Datum::F64(1.1));
     }
 
     #[test]
     fn test_greater_than_equals() {
         // Int
-        assert!(Datum::from(100) >= Datum::from(10));
-        assert!(Datum::from(1) >= Datum::from(0));
-        assert!(Datum::from(100) >= Datum::from(100));
-        assert!(!(Datum::from(100) >= Datum::from(101)));
+        assert!(Datum::I64(100) >= Datum::I64(10));
+        assert!(Datum::I64(1) >= Datum::I64(0));
+        assert!(Datum::I64(100) >= Datum::I64(100));
+        assert!(!(Datum::I64(100) >= Datum::I64(101)));
 
         // Float
-        assert!(Datum::from(1.1) >= Datum::from(1.1));
-        assert!(Datum::from(1.2) >= Datum::from(1.15));
+        assert!(Datum::F64(1.1) >= Datum::F64(1.1));
+        assert!(Datum::F64(1.2) >= Datum::F64(1.15));
     }
 
     #[test]

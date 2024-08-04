@@ -27,7 +27,7 @@ impl DatumComponent for IsHungry {
     }
 
     fn field_value(&self) -> Datum {
-        Datum::from_bool(self.0)
+        Datum::Bool(self.0)
     }
 
     fn set_value(&mut self, new_val: Datum) {
@@ -50,7 +50,7 @@ impl DatumComponent for IsTired {
     }
 
     fn field_value(&self) -> Datum {
-        Datum::from_bool(self.0)
+        Datum::Bool(self.0)
     }
 
     fn set_value(&mut self, new_val: Datum) {
@@ -79,8 +79,8 @@ fn startup(mut commands: Commands) {
 
     // Then we decide a goal of not being hungry nor tired
     let goal = Goal::new()
-        .with_req(IS_HUNGRY_KEY, Compare::Equals(Datum::from(false)))
-        .with_req(IS_TIRED_KEY, Compare::Equals(Datum::from(false)));
+        .with_req(IS_HUNGRY_KEY, Compare::Equals(Datum::Bool(false)))
+        .with_req(IS_TIRED_KEY, Compare::Equals(Datum::Bool(false)));
 
     // All goals our planner could use
     let goals = vec![goal.clone()];
@@ -100,7 +100,7 @@ fn startup(mut commands: Commands) {
     //             // The "Effect" of our EatAction is that "is_hungry" gets set to "false"
     //             mutators: vec![Mutator::Set(
     //                 IS_HUNGRY_KEY.to_string(),
-    //                 Field::from_bool(false),
+    //                 Field::Bool(false),
     //             )],
     //             state: DogoapState::new(),
     //         },
@@ -109,11 +109,11 @@ fn startup(mut commands: Commands) {
     // };
 
     // Alternatively, the `simple` functions can help you create things a bit smoother
-    let eat_action = simple_action(EAT_ACTION, IS_HUNGRY_KEY, Datum::from_bool(false))
-        .with_precondition(IS_TIRED_KEY, Compare::Equals(Datum::from(false)));
+    let eat_action = simple_action(EAT_ACTION, IS_HUNGRY_KEY, Datum::Bool(false))
+        .with_precondition(IS_TIRED_KEY, Compare::Equals(Datum::Bool(false)));
 
     // Here we define our SleepAction
-    let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, Datum::from_bool(false));
+    let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, Datum::Bool(false));
 
     // Verbose way of defining an actions_map that the planner needs
     // let actions_map = HashMap::from([
@@ -205,7 +205,7 @@ mod test {
 
     fn assert_key_is_bool(app: &mut App, key: &str, expected_bool: bool) {
         let state = get_state(app);
-        let expected_val = Datum::from_bool(expected_bool);
+        let expected_val = Datum::Bool(expected_bool);
         let found_val = state.data.get(key).unwrap();
         assert_eq!(*found_val, expected_val);
     }

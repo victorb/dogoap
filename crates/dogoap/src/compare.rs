@@ -78,7 +78,7 @@ mod test {
 
     #[test]
     fn test_check_preconditions_empty() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
         let action = Action::default();
 
         let result = check_preconditions(&state, &action);
@@ -87,9 +87,9 @@ mod test {
 
     #[test]
     fn test_check_preconditions_true() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
         let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::from(true)));
+            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, true);
@@ -97,9 +97,9 @@ mod test {
 
     #[test]
     fn test_check_preconditions_false() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
         let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::from(false)));
+            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, false);
@@ -107,20 +107,20 @@ mod test {
 
     #[test]
     fn test_check_preconditions_conflicting_preconditions() {
-        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::Bool(true));
 
         // False + True
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Datum::from(false)))
-            .with_precondition("is_hungry", Compare::Equals(Datum::from(true)));
+            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)))
+            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, false);
 
         // True + False
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Datum::from(true)))
-            .with_precondition("is_hungry", Compare::Equals(Datum::from(false)));
+            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(true)))
+            .with_precondition("is_hungry", Compare::Equals(Datum::Bool(false)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, false);
@@ -137,8 +137,8 @@ mod test {
 
         for (val1, val2, expected) in cases {
             let ret = compare_values(
-                &Compare::GreaterThanEquals(Datum::from(val1)),
-                &Datum::from(val2),
+                &Compare::GreaterThanEquals(Datum::I64(val1)),
+                &Datum::I64(val2),
             );
             assert_eq!(
                 ret, expected,
@@ -159,8 +159,8 @@ mod test {
 
         for (val1, val2, expected) in cases {
             let ret = compare_values(
-                &Compare::LessThanEquals(Datum::from(val1)),
-                &Datum::from(val2),
+                &Compare::LessThanEquals(Datum::I64(val1)),
+                &Datum::I64(val2),
             );
             assert_eq!(
                 ret, expected,
@@ -181,8 +181,8 @@ mod test {
 
         for (val1, val2, expected) in cases {
             let ret = compare_values(
-                &Compare::NotEquals(Datum::from(val1)),
-                &Datum::from(val2),
+                &Compare::NotEquals(Datum::I64(val1)),
+                &Datum::I64(val2),
             );
             assert_eq!(
                 ret, expected,

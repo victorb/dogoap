@@ -137,12 +137,12 @@ struct NeedsText;
 
 fn startup(mut commands: Commands, windows: Query<&Window>) {
     // Some helpers for our enums
-    let loc_house = Datum::from_enum(Location::House as usize);
-    let loc_outside = Datum::from_enum(Location::Outside as usize);
-    let loc_mushroom = Datum::from_enum(Location::Mushroom as usize);
-    let loc_ore = Datum::from_enum(Location::Ore as usize);
-    let loc_smelter = Datum::from_enum(Location::Smelter as usize);
-    let loc_merchant = Datum::from_enum(Location::Merchant as usize);
+    let loc_house = Datum::Enum(Location::House as usize);
+    let loc_outside = Datum::Enum(Location::Outside as usize);
+    let loc_mushroom = Datum::Enum(Location::Mushroom as usize);
+    let loc_ore = Datum::Enum(Location::Ore as usize);
+    let loc_smelter = Datum::Enum(Location::Smelter as usize);
+    let loc_merchant = Datum::Enum(Location::Merchant as usize);
 
     let window = windows.get_single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
@@ -154,10 +154,10 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         // let state = LocalState::new()
         //     .with_field(HUNGER_KEY, Field::from(0.0))
         //     .with_field(ENERGY_KEY, Field::from(75.0))
-        //     .with_field(LOCATION_KEY, Field::from_enum(Location::Outside as usize))
+        //     .with_field(LOCATION_KEY, Field::Enum(Location::Outside as usize))
         //     // .with_field(HAS_ORE_KEY, Field::from(false))
         //     // .with_field(HAS_METAL_KEY, Field::from(false))
-        //     // .with_field(GOLD_KEY, Field::from_i64(0))
+        //     // .with_field(GOLD_KEY, Field::I64(0))
         //     ;
 
         // Then we decide a goal of not being hungry nor tired
@@ -174,7 +174,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_mushroom))
             .with_precondition(
                 ENERGY_KEY,
-                Compare::GreaterThanEquals(Datum::from_f64(50.0)),
+                Compare::GreaterThanEquals(Datum::F64(50.0)),
             )
             .with_effect(
                 Effect::new(EAT_ACTION)
@@ -184,22 +184,22 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                 1,
             );
 
-        let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Datum::from(50.0))
+        let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Datum::F64(50.0))
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_house));
 
         let mine_ore_action = Action::new(MINE_ORE_ACTION)
             .with_precondition(
                 ENERGY_KEY,
-                Compare::GreaterThanEquals(Datum::from_f64(50.0)),
+                Compare::GreaterThanEquals(Datum::F64(50.0)),
             )
             .with_precondition(
                 HUNGER_KEY,
-                Compare::LessThanEquals(Datum::from_f64(50.0)),
+                Compare::LessThanEquals(Datum::F64(50.0)),
             )
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_ore))
             .with_effect(
                 Effect::new(MINE_ORE_ACTION)
-                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::from(true)))
+                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(true)))
                     .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(15.0)))
                     .with_mutator(Mutator::Increment(ENERGY_KEY.to_string(), Datum::F64(50.0))),
                 2,
@@ -207,7 +207,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
         let smelt_ore_action = Action::new(SMELT_ORE_ACTION)
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_smelter))
-            .with_precondition(HAS_ORE_KEY, Compare::Equals(Datum::from_bool(true)))
+            .with_precondition(HAS_ORE_KEY, Compare::Equals(Datum::Bool(true)))
             .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(25.0)))
             .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
             .with_effect(
@@ -229,10 +229,10 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                 1,
             );
 
-        // let sell_metal_action = simple_increment_action(SELL_METAL_ACTION, GOLD_KEY, Field::from_i64(1))
+        // let sell_metal_action = simple_increment_action(SELL_METAL_ACTION, GOLD_KEY, Field::I64(1))
         //     .with_effect(Effect::new(SELL_METAL_ACTION).with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Field::Bool(false))), 1)
         //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_merchant))
-        //     .with_precondition(HAS_METAL_KEY, Compare::Equals(Field::from_bool(true)))
+        //     .with_precondition(HAS_METAL_KEY, Compare::Equals(Field::Bool(true)))
         //     // .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Field::from_f64(75.0)))
         //     ;
 
@@ -626,7 +626,7 @@ fn handle_eat_action(
 
         // planner.state.fields.insert(
         //     LOCATION_KEY.to_string(),
-        //     Field::from_enum(Location::Outside as usize),
+        //     Field::Enum(Location::Outside as usize),
         // );
     }
 }
@@ -716,12 +716,12 @@ fn handle_mine_ore_action(
                     // planner
                     //     .state
                     //     .fields
-                    //     .insert(HAS_ORE_KEY.to_string(), Field::from_bool(true));
+                    //     .insert(HAS_ORE_KEY.to_string(), Field::Bool(true));
                     has_ore.0 = true;
 
                     // planner.state.fields.insert(
                     //     LOCATION_KEY.to_string(),
-                    //     Field::from_enum(Location::Outside as usize),
+                    //     Field::Enum(Location::Outside as usize),
                     // );
                     at_location.0 = Location::Outside as usize;
 
@@ -784,18 +784,18 @@ fn handle_smelt_ore_action(
                 // planner
                 //     .state
                 //     .fields
-                //     .insert(HAS_METAL_KEY.to_string(), Field::from_bool(true));
+                //     .insert(HAS_METAL_KEY.to_string(), Field::Bool(true));
                 has_metal.0 = true;
 
                 // planner
                 //     .state
                 //     .fields
-                //     .insert(HAS_ORE_KEY.to_string(), Field::from_bool(false));
+                //     .insert(HAS_ORE_KEY.to_string(), Field::Bool(false));
                 has_ore.0 = false;
 
                 // planner.state.fields.insert(
                 //     LOCATION_KEY.to_string(),
-                //     Field::from_enum(Location::Outside as usize),
+                //     Field::Enum(Location::Outside as usize),
                 // );
 
                 at_location.0 = Location::Outside as usize;
@@ -846,7 +846,7 @@ fn handle_sell_metal_action(
                 // planner
                 //     .state
                 //     .fields
-                //     .insert(HAS_METAL_KEY.to_string(), Field::from_bool(false));
+                //     .insert(HAS_METAL_KEY.to_string(), Field::Bool(false));
                 has_metal.0 = false;
 
                 // planner
@@ -854,13 +854,13 @@ fn handle_sell_metal_action(
                 //     .fields
                 //     .entry(GOLD_KEY.to_string())
                 //     .and_modify(|e| {
-                //         *e += Field::from_i64(1);
+                //         *e += Field::I64(1);
                 //     });
                 gold_amount.0 += 1;
 
                 // planner.state.fields.insert(
                 //     LOCATION_KEY.to_string(),
-                //     Field::from_enum(Location::Outside as usize),
+                //     Field::Enum(Location::Outside as usize),
                 // );
                 at_location.0 = Location::Outside as usize;
 
