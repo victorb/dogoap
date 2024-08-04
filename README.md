@@ -5,8 +5,8 @@
 
 ## Documentation
 
-- [`dogoap docs`](./crates/dogoap/README.md) - Standalone library for creation actions, states and goals to be used with the provided planner
-- [`bevy_dogoap docs`](./crates/bevy_dogoap/README.md) - Integration of the `dogoap` library into Bevy
+- [`dogoap`](./crates/dogoap/README.md) docs - Standalone library for creation actions, states and goals to be used with the provided planner
+- [`bevy_dogoap`](./crates/bevy_dogoap/README.md) docs - Integration of the `dogoap` library into Bevy
 
 ## Resources
 > Some resources if you want to read up on GOAP, STRIPS and related tech
