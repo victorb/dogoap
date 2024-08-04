@@ -21,11 +21,12 @@
 - [X] Arguments to Actions?
     - Nope
 
-## Field
+## Field / Datum
 
-- [ ] Rename `Field`, it's actually a Value and Field has a meaning in Rust already
+- [X] Rename `Field`, it's actually a Value and Field has a meaning in Rust already
+    - New name: `Datum`
 - [ ] `From` API is a footgun that doesn't handle type safety very well, mixing Fields will make the compiler alright, but panic on runtime...
-- [ ] Be able to create Field from Enum without using `usize`
+- [ ] Be able to create Datum from Enum without using `usize`
 
 ## UX
 

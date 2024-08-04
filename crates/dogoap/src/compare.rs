@@ -1,4 +1,4 @@
-use crate::{action::Action, field::Field, state::LocalState};
+use crate::{action::Action, datum::Datum, state::LocalState};
 use bevy_reflect::Reflect;
 use std::hash::{Hash, Hasher};
 
@@ -6,14 +6,14 @@ use std::hash::{Hash, Hasher};
 // https://doc.rust-lang.org/reference/expressions/operator-expr.html#comparison-operators
 #[derive(Reflect, Clone, Debug, PartialEq)]
 pub enum Compare {
-    Equals(Field),
-    NotEquals(Field),
-    GreaterThanEquals(Field),
-    LessThanEquals(Field),
+    Equals(Datum),
+    NotEquals(Datum),
+    GreaterThanEquals(Datum),
+    LessThanEquals(Datum),
 }
 
 impl Compare {
-    pub fn value(&self) -> Field {
+    pub fn value(&self) -> Datum {
         match self {
             Compare::Equals(f) => *f,
             Compare::NotEquals(f) => *f,
@@ -26,27 +26,27 @@ impl Compare {
 impl Hash for Compare {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {
-            Compare::Equals(field) => {
+            Compare::Equals(datum) => {
                 0_u8.hash(state);
-                field.hash(state);
+                datum.hash(state);
             },
-            Compare::NotEquals(field) => {
+            Compare::NotEquals(datum) => {
                 1_u8.hash(state);
-                field.hash(state);
+                datum.hash(state);
             },
-            Compare::GreaterThanEquals(field) => {
+            Compare::GreaterThanEquals(datum) => {
                 2_u8.hash(state);
-                field.hash(state);
+                datum.hash(state);
             },
-            Compare::LessThanEquals(field) => {
+            Compare::LessThanEquals(datum) => {
                 3_u8.hash(state);
-                field.hash(state);
+                datum.hash(state);
             },
         }
     }
 }
 
-pub fn compare_values(comparison: &Compare, value: &Field) -> bool {
+pub fn compare_values(comparison: &Compare, value: &Datum) -> bool {
     match comparison {
         Compare::Equals(v) => value == v,
         Compare::NotEquals(v) => value != v,
@@ -62,7 +62,7 @@ pub fn check_preconditions(state: &LocalState, action: &Action) -> bool {
     action.preconditions.as_ref().map_or(true, |pre| {
         pre.iter().all(|(key, value)| {
             let state_value = state
-                .fields
+                .data
                 .get(key)
                 .unwrap_or_else(|| panic!("Couldn't find key {:#?} in LocalState", key));
             compare_values(value, state_value)
@@ -78,7 +78,7 @@ mod test {
 
     #[test]
     fn test_check_preconditions_empty() {
-        let state = LocalState::default().with_field("is_hungry", Field::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
         let action = Action::default();
 
         let result = check_preconditions(&state, &action);
@@ -87,9 +87,9 @@ mod test {
 
     #[test]
     fn test_check_preconditions_true() {
-        let state = LocalState::default().with_field("is_hungry", Field::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
         let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Field::from(true)));
+            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::from(true)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, true);
@@ -97,9 +97,9 @@ mod test {
 
     #[test]
     fn test_check_preconditions_false() {
-        let state = LocalState::default().with_field("is_hungry", Field::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
         let action =
-            Action::default().with_precondition("is_hungry", Compare::Equals(Field::from(false)));
+            Action::default().with_precondition("is_hungry", Compare::Equals(Datum::from(false)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, false);
@@ -107,20 +107,20 @@ mod test {
 
     #[test]
     fn test_check_preconditions_conflicting_preconditions() {
-        let state = LocalState::default().with_field("is_hungry", Field::from(true));
+        let state = LocalState::default().with_datum("is_hungry", Datum::from(true));
 
         // False + True
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Field::from(false)))
-            .with_precondition("is_hungry", Compare::Equals(Field::from(true)));
+            .with_precondition("is_hungry", Compare::Equals(Datum::from(false)))
+            .with_precondition("is_hungry", Compare::Equals(Datum::from(true)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, false);
 
         // True + False
         let action = Action::default()
-            .with_precondition("is_hungry", Compare::Equals(Field::from(true)))
-            .with_precondition("is_hungry", Compare::Equals(Field::from(false)));
+            .with_precondition("is_hungry", Compare::Equals(Datum::from(true)))
+            .with_precondition("is_hungry", Compare::Equals(Datum::from(false)));
 
         let result = check_preconditions(&state, &action);
         assert_eq!(result, false);
@@ -137,8 +137,8 @@ mod test {
 
         for (val1, val2, expected) in cases {
             let ret = compare_values(
-                &Compare::GreaterThanEquals(Field::from(val1)),
-                &Field::from(val2),
+                &Compare::GreaterThanEquals(Datum::from(val1)),
+                &Datum::from(val2),
             );
             assert_eq!(
                 ret, expected,
@@ -159,8 +159,8 @@ mod test {
 
         for (val1, val2, expected) in cases {
             let ret = compare_values(
-                &Compare::LessThanEquals(Field::from(val1)),
-                &Field::from(val2),
+                &Compare::LessThanEquals(Datum::from(val1)),
+                &Datum::from(val2),
             );
             assert_eq!(
                 ret, expected,
@@ -181,8 +181,8 @@ mod test {
 
         for (val1, val2, expected) in cases {
             let ret = compare_values(
-                &Compare::NotEquals(Field::from(val1)),
-                &Field::from(val2),
+                &Compare::NotEquals(Datum::from(val1)),
+                &Datum::from(val2),
             );
             assert_eq!(
                 ret, expected,

@@ -12,11 +12,11 @@
 use bevy::{log::LogPlugin, prelude::*};
 use bevy_dogoap::prelude::*;
 
-// This is a LocalFieldComponent that can hold one value
-#[derive(Component, Clone, LocalFieldComponent)]
+// This is a DatumComponent that can hold one value
+#[derive(Component, Clone, DatumComponent)]
 struct IsHungry(bool);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct IsTired(bool);
 
 // This is our ActionComponent that gets added whenever the planner thinks
@@ -31,18 +31,18 @@ fn startup(mut commands: Commands) {
 
     // This is the goal we want the planner to help us reach
     let goal = create_goal!(
-        (IsHungry, Compare::Equals, Field::Bool(false)),
-        (IsTired, Compare::Equals, Field::Bool(false))
+        (IsHungry, Compare::Equals, Datum::Bool(false)),
+        (IsTired, Compare::Equals, Datum::Bool(false))
     );
 
     // Our first action, the eat action, that sets is_hungry to false
     // but requires is_tired to be set to false first
-    let eat_action = simple_action(&EatAction::key(), &IsHungry::key(), Field::Bool(false))
-        .with_precondition(&IsTired::key(), Compare::Equals(Field::Bool(false)));
+    let eat_action = simple_action(&EatAction::key(), &IsHungry::key(), Datum::Bool(false))
+        .with_precondition(&IsTired::key(), Compare::Equals(Datum::Bool(false)));
 
     // Our first action, the sleep action, that sets is_tired to false
     // No preconditions in order to sleep
-    let sleep_action = simple_action(&SleepAction::key(), &IsTired::key(), Field::Bool(false));
+    let sleep_action = simple_action(&SleepAction::key(), &IsTired::key(), Datum::Bool(false));
 
     // Here we connect our string action with the Component we want to be added
     // for that action
@@ -64,9 +64,9 @@ fn startup(mut commands: Commands) {
     let planner = Planner::new(initial_state, vec![goal], actions_map);
 
 
-    // Next we need to add all the LocalFieldComponent we've created
+    // Next we need to add all the DatumComponent we've created
     // this function helps us do just that a tiny bit easier, it'll insert all registered components
-    planner.insert_field_components(&mut commands, entity);
+    planner.insert_datum_components(&mut commands, entity);
 
     // We could also manually insert them ourselves like this:
     // commands
@@ -115,7 +115,7 @@ fn main() {
         ..default()
     });
 
-    // We need to register our components as LocalFieldComponent, otherwise planner won't be able to find them
+    // We need to register our components as DatumComponent, otherwise planner won't be able to find them
     register_components!(app, vec![IsHungry, IsTired]);
 
     app.add_systems(Startup, startup);

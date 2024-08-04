@@ -40,19 +40,19 @@ where
     }
 }
 
-#[bevy_trait_query::queryable]
-#[reflect_trait]
-pub trait LocalFieldComponent: Send + Sync {
-    fn field_key(&self) -> String;
-    fn field_value(&self) -> Field;
-    fn set_value(&mut self, new_val: Field);
-    fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity);
-}
-
 impl fmt::Debug for dyn InserterComponent {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "MarkerComponent [DebugNotImplemented!]",)
     }
+}
+
+#[bevy_trait_query::queryable]
+#[reflect_trait]
+pub trait DatumComponent: Send + Sync {
+    fn field_key(&self) -> String;
+    fn field_value(&self) -> Datum;
+    fn set_value(&mut self, new_val: Datum);
+    fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity);
 }
 
 pub trait ActionComponent: Send + Sync {
@@ -105,7 +105,7 @@ macro_rules! create_state {
         {
             let mut temp_vec = Vec::new();
             $(
-                temp_vec.push(Box::new($x) as Box<dyn LocalFieldComponent>);
+                temp_vec.push(Box::new($x) as Box<dyn DatumComponent>);
             )*
             temp_vec
         }
@@ -116,7 +116,7 @@ macro_rules! create_state {
 macro_rules! register_components {
     ($app:ident, vec![$($comp:ty),*]) => {
         $(
-            $app.register_component_as::<dyn LocalFieldComponent, $comp>();
+            $app.register_component_as::<dyn DatumComponent, $comp>();
         )*
     };
 }
@@ -134,8 +134,8 @@ macro_rules! create_goal {
     }};
 }
 
-pub fn goal_from_localfieldcomponents(
-    components: Vec<(Box<dyn LocalFieldComponent>, Compare)>,
+pub fn goal_from_datumcomponents(
+    components: Vec<(Box<dyn DatumComponent>, Compare)>,
 ) -> Goal {
     let mut new_goal = Goal::new();
     for (component, compare) in components {
@@ -174,7 +174,7 @@ impl Plugin for DogoapPlugin {
             .register_type::<planner::Planner>();
 
         // TODO how to be able to call this with generate types passed in to the creation of DogoapPlugin?
-        //     app.register_component_as::<dyn LocalFieldComponent, IsTired>();
+        //     app.register_component_as::<dyn DatumComponent, IsTired>();
         // Right now users have to manually call `register_components!(app, vec![IsHungry, IsTired]);`
         // somewhere
 

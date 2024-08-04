@@ -37,13 +37,13 @@ struct GoToMushroomAction;
 
 // All of our State fields
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct Hunger(f64);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct AtMushroom(bool);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct IsReplicating(bool);
 
 // UI elements
@@ -51,32 +51,32 @@ struct IsReplicating(bool);
 struct StateDebugText;
 
 fn spawn_miner(commands: &mut Commands, position: Vec3, speed: f32) {
-    let goal = Goal::new().with_req(&IsReplicating::key(), Compare::Equals(Field::Bool(true)));
+    let goal = Goal::new().with_req(&IsReplicating::key(), Compare::Equals(Datum::Bool(true)));
 
     let goals = vec![goal.clone()];
 
     let eat_action = Action::new(&EatAction::key())
-        .with_precondition(&AtMushroom::key(), Compare::Equals(Field::Bool(true)))
+        .with_precondition(&AtMushroom::key(), Compare::Equals(Datum::Bool(true)))
         .with_effect(
             Effect::new(&EatAction::key())
-                .with_mutator(Mutator::Decrement(Hunger::key(), Field::F64(10.0)))
-                .with_mutator(Mutator::Set(AtMushroom::key(), Field::Bool(false))),
+                .with_mutator(Mutator::Decrement(Hunger::key(), Datum::F64(10.0)))
+                .with_mutator(Mutator::Set(AtMushroom::key(), Datum::Bool(false))),
             1,
         );
 
     let replicate_action = Action::new(&ReplicateAction::key())
-        .with_precondition(&Hunger::key(), Compare::LessThanEquals(Field::F64(10.0)))
+        .with_precondition(&Hunger::key(), Compare::LessThanEquals(Datum::F64(10.0)))
         .with_effect(
             Effect::new(&ReplicateAction::key())
-                .with_mutator(Mutator::Set(IsReplicating::key(), Field::Bool(true)))
-                .with_mutator(Mutator::Increment(Hunger::key(), Field::F64(25.0))),
+                .with_mutator(Mutator::Set(IsReplicating::key(), Datum::Bool(true)))
+                .with_mutator(Mutator::Increment(Hunger::key(), Datum::F64(25.0))),
             10,
         );
 
     let go_to_mushroom_action = Action::new(&GoToMushroomAction::key()).with_effect(
         Effect::new(&GoToMushroomAction::key())
-            .with_mutator(Mutator::Set(AtMushroom::key(), Field::Bool(true)))
-            .with_mutator(Mutator::Increment(Hunger::key(), Field::F64(1.0))),
+            .with_mutator(Mutator::Set(AtMushroom::key(), Datum::Bool(true)))
+            .with_mutator(Mutator::Increment(Hunger::key(), Datum::F64(1.0))),
         2,
     );
 

@@ -4,8 +4,8 @@ use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
-#[proc_macro_derive(LocalFieldComponent)]
-pub fn local_field_component_derive(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(DatumComponent)]
+pub fn datum_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     // Assuming struct with a single bool field for simplicity
@@ -18,15 +18,15 @@ pub fn local_field_component_derive(input: TokenStream) -> TokenStream {
                 if let Some(field) = fields.unnamed.first() {
                     let ty = &field.ty;
                     let variant = match ty.to_token_stream().to_string().as_str() {
-                        "bool" => quote! { Field::Bool },
-                        "f64" => quote! { Field::F64 },
-                        "usize" => quote! { Field::Enum },
-                        "i64" => quote! { Field::I64 },
-                        _ => panic!("Unsupported type for LocalFieldComponent"),
+                        "bool" => quote! { Datum::Bool },
+                        "f64" => quote! { Datum::F64 },
+                        "usize" => quote! { Datum::Enum },
+                        "i64" => quote! { Datum::I64 },
+                        _ => panic!("Unsupported type for DatumComponent"),
                     };
                     (ty, variant)
                 } else {
-                    panic!("Expected a tuple struct with one field")
+                    panic!("Expected a tuple struct with one Datum")
                 }
             } else {
                 panic!("Expected a tuple struct")
@@ -36,16 +36,16 @@ pub fn local_field_component_derive(input: TokenStream) -> TokenStream {
     };
 
     let gen = quote! {
-        impl LocalFieldComponent for #name {
+        impl DatumComponent for #name {
             fn field_key(&self) -> String {
                 #snake_case_name.to_owned()
             }
 
-            fn field_value(&self) -> Field {
+            fn field_value(&self) -> Datum {
                 #field_enum_variant(self.0)
             }
 
-            fn set_value(&mut self, new_val: Field) {
+            fn set_value(&mut self, new_val: Datum) {
                 self.0 = match new_val {
                     #field_enum_variant(val) => val,
                     _ => panic!("Type mismatch when setting value"),

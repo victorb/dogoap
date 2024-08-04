@@ -1,12 +1,12 @@
-use crate::field::Field;
+use crate::datum::Datum;
 
 use bevy_reflect::*;
 
 #[derive(Reflect, Clone, Debug, PartialEq, Hash, Eq)]
 pub enum Mutator {
-    Set(String, Field),       // :key, :value
-    Increment(String, Field), // :key, :increment-by
-    Decrement(String, Field), // :key, :decrement-by
+    Set(String, Datum),       // :key, :value
+    Increment(String, Datum), // :key, :increment-by
+    Decrement(String, Datum), // :key, :decrement-by
 }
 
 pub fn print_mutators(mutators: Vec<Mutator>) {

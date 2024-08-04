@@ -8,13 +8,13 @@ use bevy::tasks::futures_lite::future;
 use bevy::tasks::{AsyncComputeTaskPool, Task};
 use dogoap::prelude::*;
 
-use crate::{InserterComponent, LocalFieldComponent};
+use crate::{InserterComponent, DatumComponent};
 
 type ActionsMap = HashMap<String, Action>;
 type ActionsComponentsMap = HashMap<String, Box<dyn InserterComponent>>;
 type ActionsCombinedMap = HashMap<String, (Action, Box<dyn InserterComponent>)>;
 
-type LocalFieldComponents = Vec<Box<dyn LocalFieldComponent>>;
+type DatumComponents = Vec<Box<dyn DatumComponent>>;
 
 #[derive(Component, Reflect)]
 pub struct Planner {
@@ -31,7 +31,7 @@ pub struct Planner {
     pub components_map: ActionsComponentsMap,
 
     #[reflect(ignore)]
-    pub field_components: LocalFieldComponents,
+    pub datum_components: DatumComponents,
 
     // Some additional fields to control the execution
     /// If the Planner should try to always come up with new plans based on the current goal
@@ -63,7 +63,7 @@ pub struct IsPlanning;
 impl Planner {
     pub fn new(
         // state: LocalState,
-        initial_state: LocalFieldComponents,
+        initial_state: DatumComponents,
         goals: Vec<Goal>,
         combined_map: ActionsCombinedMap,
         // components_map: HashMap<String, Box<dyn MarkerComponent>>,
@@ -82,7 +82,7 @@ impl Planner {
 
         let mut ret = Self {
             state: LocalState::new(),
-            field_components: initial_state,
+            datum_components: initial_state,
             current_goal: goals.first().cloned(),
             goals,
             actions_map,
@@ -99,14 +99,14 @@ impl Planner {
     pub fn update_localstate(&mut self) {
         let mut state = LocalState::new();
         // println!("Based On:");
-        for component in self.field_components.iter() {
+        for component in self.datum_components.iter() {
             // println!(
             //     "{:?} => {:?}",
             //     component.field_key(),
             //     component.field_value()
             // );
             state
-                .fields
+                .data
                 .insert(component.field_key(), component.field_value());
         }
         // println!("Constructed the following state:\n{:#?}", state);
@@ -114,20 +114,11 @@ impl Planner {
         self.state = state;
     }
 
-    pub fn insert_field_components(&self, commands: &mut Commands, entity: Entity) {
-        for field in self.field_components.iter() {
-            field.insert(commands, entity);
+    pub fn insert_datum_components(&self, commands: &mut Commands, entity: Entity) {
+        for datum in self.datum_components.iter() {
+            datum.insert(commands, entity);
         }
     }
-
-    // // Need a function that queries for all the field components, and our local state of them so the planning
-    // // can be updated
-    // pub fn update_localstate(&mut self, world: &mut World, entity: Entity) {
-    //     for field in self.field_components.iter_mut() {
-    //         // let new_val = field.latest_value(world, entity);
-    //         // field.set_value(new_val);
-    //     }
-    // }
 
     pub fn make_and_execute_plan(&mut self, commands: &mut Commands, entity: Entity) -> usize {
         // Vec<Action> is what dogoap::make_plan needs, hence we reformat it here
@@ -211,7 +202,7 @@ impl Planner {
 }
 
 pub fn update_planner_local_state(
-    local_field_components: Query<(Entity, &dyn LocalFieldComponent)>,
+    local_field_components: Query<(Entity, &dyn DatumComponent)>,
     mut q_planner: Query<(Entity, &mut Planner)>,
 ) {
     // let mut system_state: SystemState<(
@@ -232,7 +223,7 @@ pub fn update_planner_local_state(
     // }
 
     for (entity, mut planner) in q_planner.iter_mut() {
-        let (_c_entity, components) = local_field_components.get(entity).expect("Didn't find any LocalFieldComponents, make sure you called register_components with all Components you want to use with the planner");
+        let (_c_entity, components) = local_field_components.get(entity).expect("Didn't find any DatumComponents, make sure you called register_components with all Components you want to use with the planner");
         for component in components {
             // println!(
             //     "\nComponent\n{:?} => {:?}\n",
@@ -241,7 +232,7 @@ pub fn update_planner_local_state(
             // );
             planner
                 .state
-                .fields
+                .data
                 .insert(component.field_key(), component.field_value());
             // new_state = new_state.with_field(&component.field_key(), component.field_value());
         }

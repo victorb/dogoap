@@ -16,9 +16,9 @@ In order of appearance in a basic example.
 
 This represents someone's/something's local state that they are aware of. This is considered the "starting state" for the planner when trying to figure out what actions to take to reach the Goal state.
 
-### `Field`
+### `Datum`
 
-A Field represents a type + value.
+A Datum represents a type + value.
 
 ### `Goal`
 
@@ -26,7 +26,7 @@ A Goal is the final state we want the planner to plan for.
 
 ### `Compare`
 
-A Compare is used in Preconditions and Goals to indicate what we want a Field in our LocalState to be. `Compare::GreaterThan(Field::I64(10))` would mean we're looking to have a i64 result that is greater than 10. 
+A Compare is used in Preconditions and Goals to indicate what we want a Datum in our LocalState to be. `Compare::GreaterThan(Datum::I64(10))` would mean we're looking to have a i64 result that is greater than 10. 
 
 ### `Action`
 
@@ -46,7 +46,7 @@ The Precondition tells the planner what the LocalState must look like before the
 
 ## `bevy_dogoap` API
 
-### `LocalFieldComponent`
+### `DatumComponent`
 
 Currently, has to be a struct with arity 1, where argument is either a `bool`, `int64`, `f64` or `usize`
 

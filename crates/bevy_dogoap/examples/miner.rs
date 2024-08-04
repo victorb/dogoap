@@ -113,22 +113,22 @@ struct GoToMerchantAction;
 
 // All of our State fields
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct Hunger(f64);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct Energy(f64);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct AtLocation(usize);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct HasOre(bool);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct HasMetal(bool);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct GoldAmount(i64);
 
 // UI elements
@@ -137,12 +137,12 @@ struct NeedsText;
 
 fn startup(mut commands: Commands, windows: Query<&Window>) {
     // Some helpers for our enums
-    let loc_house = Field::from_enum(Location::House as usize);
-    let loc_outside = Field::from_enum(Location::Outside as usize);
-    let loc_mushroom = Field::from_enum(Location::Mushroom as usize);
-    let loc_ore = Field::from_enum(Location::Ore as usize);
-    let loc_smelter = Field::from_enum(Location::Smelter as usize);
-    let loc_merchant = Field::from_enum(Location::Merchant as usize);
+    let loc_house = Datum::from_enum(Location::House as usize);
+    let loc_outside = Datum::from_enum(Location::Outside as usize);
+    let loc_mushroom = Datum::from_enum(Location::Mushroom as usize);
+    let loc_ore = Datum::from_enum(Location::Ore as usize);
+    let loc_smelter = Datum::from_enum(Location::Smelter as usize);
+    let loc_merchant = Datum::from_enum(Location::Merchant as usize);
 
     let window = windows.get_single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
@@ -162,11 +162,11 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
 
         // Then we decide a goal of not being hungry nor tired
         let goal = Goal::new()
-            .with_req(HUNGER_KEY, Compare::LessThanEquals(Field::F64(50.0)))
-            .with_req(ENERGY_KEY, Compare::GreaterThanEquals(Field::F64(50.0)))
+            .with_req(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
+            .with_req(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
             // .with_req(HAS_ORE_KEY, Compare::Equals(Field::Bool(true)))
             // .with_req(HAS_METAL_KEY, Compare::Equals(Field::from(true)))
-            .with_req(GOLD_KEY, Compare::GreaterThanEquals(Field::I64(10)));
+            .with_req(GOLD_KEY, Compare::GreaterThanEquals(Datum::I64(10)));
 
         let goals = vec![goal.clone()];
 
@@ -174,57 +174,57 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_mushroom))
             .with_precondition(
                 ENERGY_KEY,
-                Compare::GreaterThanEquals(Field::from_f64(50.0)),
+                Compare::GreaterThanEquals(Datum::from_f64(50.0)),
             )
             .with_effect(
                 Effect::new(EAT_ACTION)
-                    .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Field::F64(25.0)))
-                    .with_mutator(Mutator::Decrement(ENERGY_KEY.to_string(), Field::F64(5.0)))
+                    .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(25.0)))
+                    .with_mutator(Mutator::Decrement(ENERGY_KEY.to_string(), Datum::F64(5.0)))
                     .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
                 1,
             );
 
-        let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Field::from(50.0))
+        let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Datum::from(50.0))
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_house));
 
         let mine_ore_action = Action::new(MINE_ORE_ACTION)
             .with_precondition(
                 ENERGY_KEY,
-                Compare::GreaterThanEquals(Field::from_f64(50.0)),
+                Compare::GreaterThanEquals(Datum::from_f64(50.0)),
             )
             .with_precondition(
                 HUNGER_KEY,
-                Compare::LessThanEquals(Field::from_f64(50.0)),
+                Compare::LessThanEquals(Datum::from_f64(50.0)),
             )
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_ore))
             .with_effect(
                 Effect::new(MINE_ORE_ACTION)
-                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Field::from(true)))
-                    .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Field::F64(15.0)))
-                    .with_mutator(Mutator::Increment(ENERGY_KEY.to_string(), Field::F64(50.0))),
+                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::from(true)))
+                    .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(15.0)))
+                    .with_mutator(Mutator::Increment(ENERGY_KEY.to_string(), Datum::F64(50.0))),
                 2,
             );
 
         let smelt_ore_action = Action::new(SMELT_ORE_ACTION)
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_smelter))
-            .with_precondition(HAS_ORE_KEY, Compare::Equals(Field::from_bool(true)))
-            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Field::F64(25.0)))
-            .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Field::F64(50.0)))
+            .with_precondition(HAS_ORE_KEY, Compare::Equals(Datum::from_bool(true)))
+            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(25.0)))
+            .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
             .with_effect(
                 Effect::new(SMELT_ORE_ACTION)
-                    .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Field::Bool(true)))
-                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Field::Bool(false))),
+                    .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(true)))
+                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(false))),
                 // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
                 3,
             );
 
         let sell_metal_action = Action::new(SELL_METAL_ACTION)
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_merchant))
-            .with_precondition(HAS_METAL_KEY, Compare::Equals(Field::Bool(true)))
+            .with_precondition(HAS_METAL_KEY, Compare::Equals(Datum::Bool(true)))
             .with_effect(
                 Effect::new(SELL_METAL_ACTION)
-                    .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Field::Bool(false)))
-                    .with_mutator(Mutator::Increment(GOLD_KEY.to_string(), Field::I64(1))),
+                    .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(false)))
+                    .with_mutator(Mutator::Increment(GOLD_KEY.to_string(), Datum::I64(1))),
                 // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
                 1,
             );

@@ -1,7 +1,7 @@
 mod action;
 mod compare;
 mod effect;
-mod field;
+mod datum;
 mod goal;
 mod mutator;
 pub mod planner;

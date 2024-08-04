@@ -21,18 +21,18 @@ struct IsHungry(bool);
 #[derive(Component, Clone)]
 struct IsTired(bool);
 
-impl LocalFieldComponent for IsHungry {
+impl DatumComponent for IsHungry {
     fn field_key(&self) -> String {
         "is_hungry".to_string()
     }
 
-    fn field_value(&self) -> Field {
-        Field::from_bool(self.0)
+    fn field_value(&self) -> Datum {
+        Datum::from_bool(self.0)
     }
 
-    fn set_value(&mut self, new_val: Field) {
+    fn set_value(&mut self, new_val: Datum) {
         self.0 = match new_val {
-            Field::Bool(b) => b,
+            Datum::Bool(b) => b,
             _ => {
                 panic!("Unimplemented!")
             }
@@ -44,18 +44,18 @@ impl LocalFieldComponent for IsHungry {
     }
 }
 
-impl LocalFieldComponent for IsTired {
+impl DatumComponent for IsTired {
     fn field_key(&self) -> String {
         "is_tired".to_string()
     }
 
-    fn field_value(&self) -> Field {
-        Field::from_bool(self.0)
+    fn field_value(&self) -> Datum {
+        Datum::from_bool(self.0)
     }
 
-    fn set_value(&mut self, new_val: Field) {
+    fn set_value(&mut self, new_val: Datum) {
         self.0 = match new_val {
-            Field::Bool(b) => b,
+            Datum::Bool(b) => b,
             _ => {
                 panic!("Unimplemented!")
             }
@@ -73,14 +73,14 @@ fn startup(mut commands: Commands) {
     //     .with_field(IS_HUNGRY_KEY, Field::from(true))
     //     .with_field(IS_TIRED_KEY, Field::from(true));
     let components = vec![
-        Box::new(IsHungry(true)) as Box<dyn LocalFieldComponent>,
-        Box::new(IsTired(true)) as Box<dyn LocalFieldComponent>,
+        Box::new(IsHungry(true)) as Box<dyn DatumComponent>,
+        Box::new(IsTired(true)) as Box<dyn DatumComponent>,
     ];
 
     // Then we decide a goal of not being hungry nor tired
     let goal = Goal::new()
-        .with_req(IS_HUNGRY_KEY, Compare::Equals(Field::from(false)))
-        .with_req(IS_TIRED_KEY, Compare::Equals(Field::from(false)));
+        .with_req(IS_HUNGRY_KEY, Compare::Equals(Datum::from(false)))
+        .with_req(IS_TIRED_KEY, Compare::Equals(Datum::from(false)));
 
     // All goals our planner could use
     let goals = vec![goal.clone()];
@@ -109,11 +109,11 @@ fn startup(mut commands: Commands) {
     // };
 
     // Alternatively, the `simple` functions can help you create things a bit smoother
-    let eat_action = simple_action(EAT_ACTION, IS_HUNGRY_KEY, Field::from_bool(false))
-        .with_precondition(IS_TIRED_KEY, Compare::Equals(Field::from(false)));
+    let eat_action = simple_action(EAT_ACTION, IS_HUNGRY_KEY, Datum::from_bool(false))
+        .with_precondition(IS_TIRED_KEY, Compare::Equals(Datum::from(false)));
 
     // Here we define our SleepAction
-    let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, Field::from_bool(false));
+    let sleep_action = simple_action(SLEEP_ACTION, IS_TIRED_KEY, Datum::from_bool(false));
 
     // Verbose way of defining an actions_map that the planner needs
     // let actions_map = HashMap::from([
@@ -145,7 +145,7 @@ fn startup(mut commands: Commands) {
 
     planner.current_goal = Some(goal.clone());
 
-    planner.insert_field_components(&mut commands, entity);
+    planner.insert_datum_components(&mut commands, entity);
 
     commands.entity(entity).insert(planner);
 }
@@ -156,7 +156,7 @@ fn handle_eat_action(
 ) {
     for (entity, _action, mut is_hungry) in query.iter_mut() {
         println!("We're doing EatAction!");
-        is_hungry.set_value(Field::Bool(false));
+        is_hungry.set_value(Datum::Bool(false));
         // planner
         //     .state
         //     .fields
@@ -173,7 +173,7 @@ fn handle_sleep_action(
     for (entity, _action, mut is_tired) in query.iter_mut() {
         println!("We're doing SleepAction!");
         // *is_tired = IsTired(false);
-        is_tired.set_value(Field::Bool(false));
+        is_tired.set_value(Datum::Bool(false));
         // planner
         //     .state
         //     .fields
@@ -205,8 +205,8 @@ mod test {
 
     fn assert_key_is_bool(app: &mut App, key: &str, expected_bool: bool) {
         let state = get_state(app);
-        let expected_val = Field::from_bool(expected_bool);
-        let found_val = state.fields.get(key).unwrap();
+        let expected_val = Datum::from_bool(expected_bool);
+        let found_val = state.data.get(key).unwrap();
         assert_eq!(*found_val, expected_val);
     }
 
@@ -234,8 +234,8 @@ mod test {
         let mut app = App::new();
 
         // TODO get rid of this somehow?
-        app.register_component_as::<dyn LocalFieldComponent, IsHungry>();
-        app.register_component_as::<dyn LocalFieldComponent, IsTired>();
+        app.register_component_as::<dyn DatumComponent, IsHungry>();
+        app.register_component_as::<dyn DatumComponent, IsTired>();
 
         app.add_plugins(DogoapPlugin);
         app.add_plugins(TaskPoolPlugin{task_pool_options: TaskPoolOptions::with_num_threads(1)});

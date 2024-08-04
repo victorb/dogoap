@@ -36,10 +36,10 @@ fn main() {
 
 // LocalFields
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct Thirst(f64);
 
-#[derive(Component, Clone, LocalFieldComponent)]
+#[derive(Component, Clone, DatumComponent)]
 struct CarryingItem(usize); // `Items::Lemonade as usize` for example
 
 // Actions
@@ -81,7 +81,7 @@ struct StateDebugText;
 fn setup(mut commands: Commands) {
     // Spawn customers
     for i in 0..1 {
-        let goal = Goal::new().with_req(&Thirst::key(), Compare::LessThanEquals(Field::F64(1.0)));
+        let goal = Goal::new().with_req(&Thirst::key(), Compare::LessThanEquals(Datum::F64(1.0)));
 
         let goals = vec![goal.clone()];
 
@@ -89,15 +89,15 @@ fn setup(mut commands: Commands) {
         let drink_lemonade_action = Action::new(&DrinkLemonade::key())
             .with_precondition(
                 &CarryingItem::key(),
-                Compare::Equals(Field::Enum(Item::Lemonade as usize)),
+                Compare::Equals(Datum::Enum(Item::Lemonade as usize)),
             )
             .with_effect(
                 Effect::new(&DrinkLemonade::key())
                     .with_mutator(Mutator::Set(
                         CarryingItem::key(),
-                        Field::Enum(Item::Nothing as usize),
+                        Datum::Enum(Item::Nothing as usize),
                     ))
-                    .with_mutator(Mutator::Decrement(Thirst::key(), Field::F64(10.0))),
+                    .with_mutator(Mutator::Decrement(Thirst::key(), Datum::F64(10.0))),
                 1,
             );
 
@@ -105,13 +105,13 @@ fn setup(mut commands: Commands) {
         let pickup_lemonade_action = Action::new(&PickupLemonade::key())
             .with_precondition(
                 &CarryingItem::key(),
-                Compare::Equals(Field::Enum(Item::Nothing as usize)),
+                Compare::Equals(Datum::Enum(Item::Nothing as usize)),
             )
             .with_effect(
                 Effect::new(&PickupLemonade::key())
                     .with_mutator(Mutator::Set(
                         CarryingItem::key(),
-                        Field::Enum(Item::Lemonade as usize),
+                        Datum::Enum(Item::Lemonade as usize),
                     )),
                 1,
             );

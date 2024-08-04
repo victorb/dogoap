@@ -34,21 +34,6 @@ impl std::fmt::Debug for Node {
     }
 }
 
-// Old heuristic
-// fn heuristic(node: &Node, goal: &Goal) -> usize {
-//     let state = node.state();
-//     goal.requirements
-//         .iter()
-//         .filter(|(key, value)| {
-//             if let Some(state_val) = state.fields.get(*key) {
-//                 !compare_values(value, state_val)
-//             } else {
-//                 true // If the key is not found, it's a mismatch
-//             }
-//         })
-//         .count()
-// }
-
 fn heuristic(node: &Node, goal: &Goal) -> usize {
     node.state().distance_to_goal(goal) as usize
 }
@@ -63,15 +48,15 @@ fn successors<'a>(node: &'a Node, actions: &'a [Action]) -> impl Iterator<Item =
             for mutator in &action.options[0].0.mutators {
                 match mutator {
                     Mutator::Set(key, value) => {
-                        new_state.fields.insert(key.to_string(), *value);
+                        new_state.data.insert(key.to_string(), *value);
                     }
                     Mutator::Increment(key, value) => {
-                        if let Some(current_value) = new_state.fields.get_mut(key) {
+                        if let Some(current_value) = new_state.data.get_mut(key) {
                             *current_value += *value;
                         }
                     }
                     Mutator::Decrement(key, value) => {
-                        if let Some(current_value) = new_state.fields.get_mut(key) {
+                        if let Some(current_value) = new_state.data.get_mut(key) {
                             *current_value -= *value;
                         }
                     }
@@ -91,7 +76,7 @@ fn successors<'a>(node: &'a Node, actions: &'a [Action]) -> impl Iterator<Item =
 
 fn is_goal(node: &Node, goal: &Goal) -> bool {
     goal.requirements.iter().all(|(key, value)| {
-        if let Some(state_val) = node.state().fields.get(key) {
+        if let Some(state_val) = node.state().data.get(key) {
             compare_values(value, state_val)
         } else {
             panic!("Couldn't find key {:#?} in LocalState", key);
@@ -169,7 +154,7 @@ pub fn print_plan(plan: (Vec<Node>, usize)) {
             }
             Node::State(s) => {
                 println!("\t\t= INITIAL STATE");
-                for (k, v) in &s.fields {
+                for (k, v) in &s.data {
                     println!("\t\t{} = {}", k, v);
                 }
                 last_state = s.clone();
@@ -178,7 +163,7 @@ pub fn print_plan(plan: (Vec<Node>, usize)) {
         println!("\n\t\t---\n");
     }
     println!("\t\t= FINAL STATE (COST: {})", cost);
-    for (k, v) in &last_state.fields {
+    for (k, v) in &last_state.data {
         println!("\t\t{} = {}", k, v);
     }
 }

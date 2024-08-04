@@ -4,13 +4,13 @@ use dogoap::prelude::*;
 // functions to create the data structures instead
 
 fn main() {
-    let start = LocalState::new().with_field("is_hungry", Field::from_bool(true));
+    let start = LocalState::new().with_datum("is_hungry", Datum::from_bool(true));
 
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Field::from_bool(false)));
+    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::from_bool(false)));
 
     // NOTE This is the "simple" part, where we create an action with just
     // two strings + a field
-    let eat_action = simple_action("eat", "is_hungry", Field::from_bool(false));
+    let eat_action = simple_action("eat", "is_hungry", Datum::from_bool(false));
 
     let actions: Vec<Action> = vec![eat_action];
 

@@ -2,14 +2,14 @@ use crate::prelude::*;
 
 pub fn simple_action<T>(name: &str, key_to_mutate: &str, from_value: T) -> Action
 where
-    Field: From<T>,
+    Datum: From<T>,
 {
     simple_multi_mutate_action(name, vec![(key_to_mutate, from_value)])
 }
 
 pub fn simple_multi_mutate_action<T>(name: &str, muts: Vec<(&str, T)>) -> Action
 where
-    Field: From<T>,
+    Datum: From<T>,
 {
     let mut mutators = vec![];
 
@@ -33,7 +33,7 @@ where
 
 pub fn simple_increment_action<T>(name: &str, key_to_mutate: &str, from_value: T) -> Action
 where
-    Field: From<T>,
+    Datum: From<T>,
 {
     let mut action = simple_multi_mutate_action(name, vec![]);
     action.options = vec![(
@@ -52,7 +52,7 @@ where
 
 pub fn simple_decrement_action<T>(name: &str, key_to_mutate: &str, from_value: T) -> Action
 where
-    Field: From<T>,
+    Datum: From<T>,
 {
     let mut action = simple_multi_mutate_action(name, vec![]);
     action.options = vec![(
