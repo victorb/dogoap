@@ -25,22 +25,24 @@
 
 - [X] Rename `Field`, it's actually a Value and Field has a meaning in Rust already
     - New name: `Datum`
-- [ ] `From` API is a footgun that doesn't handle type safety very well, mixing Fields will make the compiler alright, but panic on runtime...
+- [X] `From` API is a footgun that doesn't handle type safety very well, mixing Fields will make the compiler alright, but panic on runtime...
 - [ ] Be able to create Datum from Enum without using `usize`
 
 ## UX
 
 - [X] Fix so we don't have to pass in a vec + hashmap of actions
-- [ ] `Goal` has both `new` and `build`, maybe not needed
-- [ ] Make an example which involves Transforms and t1.distance(t2)
+- [X] `Goal` has both `new` and `build`, maybe not needed
+- [X] Make an example which involves Transforms and t1.distance(t2)
 - [ ] Do one last investigation if we can get rid of the String Constants for action/state keys
 - [X] Maybe write a macro for deriving things at the same time easily
 - [X] Rename `State` to something else... || is now `LocalState`
 - [X] Get rid of users having to do RegisterExt
     - Kind of simpler now...
 - [ ] Improve derive so only `Component` + `ActionComponent` can be used, instead of also `Default` and `Clone`
+    - Hmmmmmmm, not sure about this...
 - [ ] Ensure that the macros (create_goal!, simple_action, create_action_map!, create_state!, and register_components!) follow idiomatic practices and provide clear documentation for their usage and functionality.
 - [ ] Consider providing a more streamlined way to set up the planner, goals, and actions. For example, you could create a builder pattern or a setup function that takes care of creating the planner, inserting components, and adding the planner to the entity in a single step.
+    - Addressed by some sort of DSL perhaps
 
 ## Documentation
 

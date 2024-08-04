@@ -22,14 +22,7 @@ impl Hash for Goal {
 }
 
 impl Goal {
-    // why both new and build?
     pub fn new() -> Self {
-        Self {
-            requirements: BTreeMap::new(),
-        }
-    }
-
-    pub fn build() -> Self {
         Self {
             requirements: BTreeMap::new(),
         }
