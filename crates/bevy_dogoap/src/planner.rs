@@ -4,9 +4,10 @@ use std::{collections::HashMap, fmt};
 use bevy::prelude::*;
 use bevy::tasks::futures_lite::future;
 use bevy::tasks::{AsyncComputeTaskPool, Task};
+
 use dogoap::prelude::*;
 
-use crate::{DatumComponent, InserterComponent};
+use crate::prelude::*;
 
 type ActionsMap = HashMap<String, Action>;
 type ActionsComponentsMap = HashMap<String, Box<dyn InserterComponent>>;

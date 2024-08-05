@@ -31,6 +31,7 @@
 
 ## UX
 
+- [ ] `create_state!` to return `tuple` with components + state
 - [ ] Do one last investigation if we can get rid of the String Constants for action/state keys
     - Kind of simpler now...
 - [ ] Improve derive so only `Component` + `ActionComponent` can be used, instead of also `Default` and `Clone`
