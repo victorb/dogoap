@@ -29,8 +29,9 @@ That's the basics. Of course, things get more interesting once we start to inclu
 
 ## Code / API example
 
-This is the API of the library:
+This is the actual API of the library:
 
 ```rust
 
 ```
+

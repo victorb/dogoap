@@ -7,24 +7,24 @@ fn main() {
         .with_datum("gold", Datum::I64(0));
 
     let expected_state = LocalState::new()
-        .with_datum("energy", Datum::I64(45))
-        .with_datum("hunger", Datum::I64(55))
+        .with_datum("energy", Datum::I64(50))
+        .with_datum("hunger", Datum::I64(50))
         .with_datum("gold", Datum::I64(7));
 
     let goal = Goal::new().with_req("gold", Compare::Equals(Datum::I64(7)));
 
+    // TOOD should keep the `10 as 64` syntax with .from somehow
     let sleep_action = simple_increment_action("sleep", "energy", Datum::I64(10));
 
     let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(10))
         .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(25)));
 
-    let rob_people = Action::new("rob")
+    let rob_people = simple_increment_action("rob", "gold", Datum::I64(1))
         .with_effect(
             Effect {
                 action: "rob".to_string(),
                 mutators: vec![
                     Mutator::Decrement("energy".to_string(), Datum::I64(5)),
-                    Mutator::Increment("gold".to_string(), Datum::I64(1)),
                     Mutator::Increment("hunger".to_string(), Datum::I64(5)),
                 ],
                 state: LocalState::default(),
@@ -38,11 +38,11 @@ fn main() {
 
     let plan = make_plan(&start, &actions[..], &goal);
     let effects = get_effects_from_plan(plan.clone().unwrap().0);
-    assert_eq!(17, effects.len());
+    assert_eq!(11, effects.len());
 
-    println!("{:#?}", effects);
+    print_plan(plan.clone().unwrap());
 
-    print_plan(plan.unwrap());
+    // visualize_plan(plan.unwrap(), "my-plan.dot");
 
     assert_eq!(expected_state, effects.last().unwrap().state);
 }
