@@ -14,7 +14,7 @@ pub struct Action {
     /// String like `eat_action`
     pub key: String,
     /// What preconditions need to be true before we can execute this action
-    pub preconditions: Option<Vec<(String, Compare)>>,
+    pub preconditions: Vec<(String, Compare)>,
     /// What is the outcome from doing this action
     pub options: Vec<(Effect, usize)>,
 }
@@ -31,7 +31,7 @@ impl Action {
     pub fn new(key: &str) -> Self {
         Self {
             key: key.to_string(),
-            preconditions: None,
+            preconditions: vec![],
             options: vec![],
         }
     }
@@ -41,13 +41,7 @@ impl Action {
     }
 
     pub fn with_precondition(mut self, key: &str, compare: Compare) -> Self {
-        if self.preconditions.is_none() {
-            self.preconditions = Some(vec![(key.to_string(), compare)]);
-        } else {
-            let mut new_preconditions = self.preconditions.unwrap();
-            new_preconditions.push((key.to_string(), compare));
-            self.preconditions = Some(new_preconditions);
-        }
+        self.preconditions.push((key.to_string(), compare));
         self
     }
 

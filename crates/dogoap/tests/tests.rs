@@ -17,7 +17,7 @@ fn test_basic_bool_setting() {
 
     let eat_action = Action {
         key: "eat".to_string(),
-        preconditions: None,
+        preconditions: vec![],
         options: vec![(eat_consequence, 1)],
     };
 
@@ -52,7 +52,7 @@ fn test_action_keys() {
 
     let eat_action = Action {
         key: "eat".to_string(),
-        preconditions: None,
+        preconditions: vec![],
         options: vec![(eat_consequence, 1)],
     };
 
@@ -87,7 +87,7 @@ fn test_no_actions_needed() {
 
     let eat_action = Action {
         key: "eat".to_string(),
-        preconditions: None,
+        preconditions: vec![],
         options: vec![(eat_consequence, 1)],
     };
 

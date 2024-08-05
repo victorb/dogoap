@@ -19,7 +19,7 @@ where
 
     Action {
         key: name.to_string(),
-        preconditions: None,
+        preconditions: vec![],
         options: vec![(
             Effect {
                 action: name.to_string(),
@@ -70,9 +70,7 @@ where
 }
 
 pub fn add_preconditions(action: &mut Action, preconds: Vec<(&str, Compare)>) {
-    let mut new_preconds = vec![];
     for pc in preconds {
-        new_preconds.push((pc.0.to_string(), pc.1));
+        action.preconditions.push((pc.0.to_string(), pc.1));
     }
-    action.preconditions = Some(new_preconds);
 }

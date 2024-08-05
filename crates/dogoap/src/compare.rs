@@ -59,14 +59,12 @@ pub fn compare_values(comparison: &Compare, value: &Datum) -> bool {
 /// Checks all the preconditions from the `Action` against passed in `LocalState`
 /// Returns `true` if all the preconditions pass, otherwise `false`
 pub fn check_preconditions(state: &LocalState, action: &Action) -> bool {
-    action.preconditions.as_ref().map_or(true, |pre| {
-        pre.iter().all(|(key, value)| {
-            let state_value = state
-                .data
-                .get(key)
-                .unwrap_or_else(|| panic!("Couldn't find key {:#?} in LocalState", key));
-            compare_values(value, state_value)
-        })
+    action.preconditions.iter().all(|(key, value)| {
+        let state_value = state
+            .data
+            .get(key)
+            .unwrap_or_else(|| panic!("Couldn't find key {:#?} in LocalState", key));
+        compare_values(value, state_value)
     })
 }
 

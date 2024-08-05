@@ -11,7 +11,7 @@ fn main() {
 
     let eat_action = Action {
         key: "eat".to_string(),
-        preconditions: None,
+        preconditions: vec![],
         options: vec![(
             Effect {
                 action: "eat".to_string(),
