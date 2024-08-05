@@ -47,7 +47,7 @@ fn successors<'a>(
     actions.iter().filter_map(move |action| {
         if check_preconditions(state, action) {
             let mut new_state = state.clone();
-            for mutator in &action.options[0].0.mutators {
+            for mutator in &action.effects[0].0.mutators {
                 match mutator {
                     Mutator::Set(key, value) => {
                         new_state.data.insert(key.to_string(), *value);
@@ -65,11 +65,11 @@ fn successors<'a>(
                 }
             }
             let new_effect = Effect {
-                action: action.options[0].0.action.clone(),
-                mutators: action.options[0].0.mutators.clone(),
+                action: action.effects[0].0.action.clone(),
+                mutators: action.effects[0].0.mutators.clone(),
                 state: new_state,
             };
-            Some((Node::Effect(new_effect), action.options[0].1))
+            Some((Node::Effect(new_effect), action.effects[0].1))
         } else {
             None
         }

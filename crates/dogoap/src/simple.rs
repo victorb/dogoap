@@ -20,7 +20,7 @@ where
     Action {
         key: name.to_string(),
         preconditions: vec![],
-        options: vec![(
+        effects: vec![(
             Effect {
                 action: name.to_string(),
                 mutators,
@@ -36,7 +36,7 @@ where
     Datum: From<T>,
 {
     let mut action = simple_multi_mutate_action(name, vec![]);
-    action.options = vec![(
+    action.effects = vec![(
         Effect {
             action: name.to_string(),
             mutators: vec![Mutator::Increment(
@@ -55,7 +55,7 @@ where
     Datum: From<T>,
 {
     let mut action = simple_multi_mutate_action(name, vec![]);
-    action.options = vec![(
+    action.effects = vec![(
         Effect {
             action: name.to_string(),
             mutators: vec![Mutator::Decrement(

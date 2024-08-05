@@ -10,7 +10,8 @@ fn main() {
 
     // NOTE This is the "simple" part, where we create an action with just
     // two strings + a field
-    let eat_action = simple_action("eat", "is_hungry", Datum::Bool(false));
+    let eat_action = Action::new("eat")
+        .with_mutator(Mutator::Set("is_hungry".to_string(), Datum::Bool(false)));
 
     let actions: Vec<Action> = vec![eat_action];
 

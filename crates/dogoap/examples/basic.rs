@@ -12,7 +12,7 @@ fn main() {
     let eat_action = Action {
         key: "eat".to_string(),
         preconditions: vec![],
-        options: vec![(
+        effects: vec![(
             Effect {
                 action: "eat".to_string(),
                 mutators: vec![Mutator::Set("is_hungry".to_string(), Datum::Bool(false))],
