@@ -1,6 +1,6 @@
 pub use bevy_trait_query::RegisterExt;
 
-pub use dogoap::prelude::{Action, Compare, Datum, Goal, LocalState};
+pub use dogoap::prelude::{Action, Compare, Datum, Goal, LocalState, Mutator};
 
 pub use dogoap::prelude::{
     simple_action, simple_decrement_action, simple_increment_action, simple_multi_mutate_action,
@@ -14,8 +14,8 @@ pub use crate::{
 pub use crate::plugin::DogoapPlugin;
 
 pub use crate::traits::{
-    ActionBuilder, ActionComponent, ActionTrait, DatumComponent, EnumDatum, InserterComponent,
-    MutatorTrait, Precondition,
+    ActionBuilder, ActionComponent, ActionTrait, DatumComponent, EnumDatum, GoalTrait,
+    InserterComponent, MutatorTrait, Precondition,
 };
 
 pub use macros::{ActionComponent, DatumComponent, EnumComponent, EnumDatum};

@@ -1,6 +1,5 @@
 use bevy::{color::palettes::css::*, prelude::*, time::common_conditions::on_timer};
 use bevy_dogoap::{create_action_map_v2, prelude::*};
-use dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
 
@@ -8,40 +7,47 @@ use std::{collections::HashMap, time::Duration};
 
 /// This is our marker components, so we can keep track of the various in-game entities
 #[derive(Component)]
-struct Miner {
+struct Cell {
     speed: f32,
 }
 
 #[derive(Component)]
-struct DeadMiner;
+struct DeadCell;
 
 #[derive(Component)]
 struct BusyObject(Entity);
 
 #[derive(Component)]
-struct Mushroom;
+struct Food;
 
 #[derive(Component)]
 struct MoveTo(Vec3, Entity);
 
-// Various actions our Miner can perform
+//
+// Various actions our Cell can perform
+//
 
+// When cell is at food, the cell can consume the food, decreasing hunger
 #[derive(Component, Clone, Reflect, Default, ActionComponent)]
 struct EatAction;
 
+// When we're not hungry, our cell can replicate itself
 #[derive(Component, Clone, Reflect, Default, ActionComponent)]
 struct ReplicateAction;
 
+// This will make the cell seek out the closest food
 #[derive(Component, Clone, Reflect, Default, ActionComponent)]
-struct GoToMushroomAction;
+struct GoToFoodAction;
 
+//
 // All of our State fields
+//
 
 #[derive(Component, Clone, DatumComponent)]
 struct Hunger(f64);
 
 #[derive(Component, Clone, DatumComponent)]
-struct AtMushroom(bool);
+struct AtFood(bool);
 
 #[derive(Component, Clone, DatumComponent)]
 struct IsReplicating(bool);
@@ -50,46 +56,39 @@ struct IsReplicating(bool);
 #[derive(Component)]
 struct StateDebugText;
 
-fn spawn_miner(commands: &mut Commands, position: Vec3, speed: f32) {
-    let goal = Goal::new().with_req(&IsReplicating::key(), Compare::Equals(Datum::Bool(true)));
+fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
+    let goal = Goal::from_reqs(&[IsReplicating::is(true)]);
 
     let goals = vec![goal.clone()];
 
-    let eat_action = Action::new(&EatAction::key())
-        .with_precondition(&AtMushroom::key(), Compare::Equals(Datum::Bool(true)))
-        .with_effect(
-            Effect::new(&EatAction::key())
-                .with_mutator(Mutator::Decrement(Hunger::key(), Datum::F64(10.0)))
-                .with_mutator(Mutator::Set(AtMushroom::key(), Datum::Bool(false))),
-            1,
-        );
+    let eat_action = EatAction::new()
+        .add_precondition(AtFood::is(true))
+        .add_mutator(Hunger::decrease(10.0))
+        .add_mutator(AtFood::set(true))
+        .set_cost(1);
 
-    let replicate_action = Action::new(&ReplicateAction::key())
-        .with_precondition(&Hunger::key(), Compare::LessThanEquals(Datum::F64(10.0)))
-        .with_effect(
-            Effect::new(&ReplicateAction::key())
-                .with_mutator(Mutator::Set(IsReplicating::key(), Datum::Bool(true)))
-                .with_mutator(Mutator::Increment(Hunger::key(), Datum::F64(25.0))),
-            10,
-        );
+    let replicate_action = ReplicateAction::new()
+        .add_precondition(Hunger::is_less(10.0))
+        .add_mutator(IsReplicating::set(true))
+        .add_mutator(Hunger::increase(25.0))
+        .set_cost(10);
 
-    let go_to_mushroom_action = Action::new(&GoToMushroomAction::key()).with_effect(
-        Effect::new(&GoToMushroomAction::key())
-            .with_mutator(Mutator::Set(AtMushroom::key(), Datum::Bool(true)))
-            .with_mutator(Mutator::Increment(Hunger::key(), Datum::F64(1.0))),
-        2,
-    );
+    let go_to_food_action = GoToFoodAction::new()
+        .add_precondition(AtFood::is(false))
+        .add_mutator(AtFood::set(true))
+        .add_mutator(Hunger::increase(1.0))
+        .set_cost(2);
 
     let actions_map = create_action_map_v2!(
         (EatAction, eat_action),
-        (GoToMushroomAction, go_to_mushroom_action),
+        (GoToFoodAction, go_to_food_action),
         (ReplicateAction, replicate_action)
     );
 
     let mut rng = rand::thread_rng();
     let hunger = rng.gen_range(20.0..45.0);
-    let initial_state = (Hunger(hunger), AtMushroom(false), IsReplicating(false));
-    let state = create_state!(Hunger(hunger), AtMushroom(false), IsReplicating(false));
+    let initial_state = (Hunger(hunger), AtFood(false), IsReplicating(false));
+    let state = create_state!(Hunger(hunger), AtFood(false), IsReplicating(false));
 
     let mut planner = Planner::new(state, goals, actions_map);
 
@@ -104,12 +103,13 @@ fn spawn_miner(commands: &mut Commands, position: Vec3, speed: f32) {
 
     commands
         .spawn((
-            Name::new("Miner"),
-            Miner { speed },
+            Name::new("Cell"),
+            Cell { speed },
             planner,
             initial_state,
             Transform::from_translation(position),
             GlobalTransform::from_translation(position),
+            InheritedVisibility::default(),
         ))
         .with_children(|subcommands| {
             subcommands.spawn((
@@ -135,16 +135,16 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
     for _i in 0..1 {
         let y = rng.gen_range(-window_height..window_height);
         let x = rng.gen_range(-window_width..window_width);
-        spawn_miner(&mut commands, Vec3::from_array([x, y, 1.0]), 128.0);
+        spawn_cell(&mut commands, Vec3::from_array([x, y, 1.0]), 128.0);
     }
 
-    // Begin with three mushrooms
+    // Begin with three food
     for _i in 0..30 {
         let y = rng.gen_range(-window_height..window_height);
         let x = rng.gen_range(-window_width..window_width);
         commands.spawn((
-            Name::new("Mushroom"),
-            Mushroom,
+            Name::new("Food"),
+            Food,
             Transform::from_translation(Vec3::new(x, y, 0.0)),
         ));
     }
@@ -152,22 +152,22 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn spawn_random_mushroom(
+fn spawn_random_food(
     windows: Query<&Window>,
     mut commands: Commands,
-    mushrooms: Query<Entity, With<Mushroom>>,
+    q_food: Query<Entity, With<Food>>,
 ) {
     let window = windows.get_single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
-    if mushrooms.iter().len() < 100 {
+    if q_food.iter().len() < 100 {
         let mut rng = rand::thread_rng();
         let y = rng.gen_range(-window_height..window_height);
         let x = rng.gen_range(-window_width..window_width);
         commands.spawn((
-            Name::new("Mushroom"),
-            Mushroom,
+            Name::new("Food"),
+            Food,
             Transform::from_translation(Vec3::new(x, y, 0.0)),
         ));
     }
@@ -176,9 +176,9 @@ fn spawn_random_mushroom(
 fn handle_move_to(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &Miner, &MoveTo, &mut Transform)>,
+    mut query: Query<(Entity, &Cell, &MoveTo, &mut Transform)>,
 ) {
-    for (entity, miner, move_to, mut transform) in query.iter_mut() {
+    for (entity, cell, move_to, mut transform) in query.iter_mut() {
         let destination = move_to.0;
         let destination_entity = move_to.1;
 
@@ -187,7 +187,7 @@ fn handle_move_to(
             Some(_) => {
                 if transform.translation.distance(destination) > 5.0 {
                     let direction = (destination - transform.translation).normalize();
-                    transform.translation += direction * miner.speed * time.delta_seconds();
+                    transform.translation += direction * cell.speed * time.delta_seconds();
                 } else {
                     commands.entity(entity).remove::<MoveTo>();
                     commands.entity(destination_entity).remove::<BusyObject>();
@@ -201,21 +201,21 @@ fn handle_move_to(
     }
 }
 
-fn handle_go_to_mushroom_action(
+fn handle_go_to_food_action(
     mut commands: Commands,
     mut query: Query<
-        (Entity, &GoToMushroomAction, &Transform, &mut AtMushroom),
-        (Without<Mushroom>, Without<MoveTo>),
+        (Entity, &GoToFoodAction, &Transform, &mut AtFood),
+        (Without<Food>, Without<MoveTo>),
     >,
-    q_mushrooms: Query<(Entity, &Transform), (With<Mushroom>, Without<BusyObject>)>,
+    q_food: Query<(Entity, &Transform), (With<Food>, Without<BusyObject>)>,
     q_busy: Query<&BusyObject>,
 ) {
-    for (entity, _action, t_entity, mut at_mushroom) in query.iter_mut() {
+    for (entity, _action, t_entity, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
-        let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
-        let mushroom = find_closest(origin, items);
+        let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
+        let food = find_closest(origin, items);
 
-        let (e_mushroom, t_mushroom, distance) = match mushroom {
+        let (e_food, t_food, distance) = match food {
             Some(v) => v,
             None => {
                 // Do nothing...
@@ -223,7 +223,7 @@ fn handle_go_to_mushroom_action(
             }
         };
 
-        match q_busy.get(e_mushroom) {
+        match q_busy.get(e_food) {
             Ok(busy) => {
                 if busy.0 != entity {
                     continue;
@@ -233,26 +233,13 @@ fn handle_go_to_mushroom_action(
         }
 
         if distance > 5.0 {
-            commands.entity(e_mushroom).insert(BusyObject(entity));
-            commands
-                .entity(entity)
-                .insert(MoveTo(t_mushroom, e_mushroom));
+            commands.entity(e_food).insert(BusyObject(entity));
+            commands.entity(entity).insert(MoveTo(t_food, e_food));
         } else {
-            // Consume mushroom!
-            // println!("We're at a mushroom, eat it!");
-            at_mushroom.0 = true;
-            commands.entity(entity).remove::<GoToMushroomAction>();
+            // Consume food!
+            at_food.0 = true;
+            commands.entity(entity).remove::<GoToFoodAction>();
         }
-
-        // go_to_location::<GoToMushroomAction>(
-        //     &mut at_location,
-        //     time.delta_seconds(),
-        //     &mut t_entity,
-        //     mushroom.1,
-        //     Location::Mushroom,
-        //     entity,
-        //     &mut commands,
-        // )
     }
 }
 
@@ -276,19 +263,18 @@ fn handle_replicate_action(
         &mut IsReplicating,
         &mut Hunger,
         &mut Planner,
-        &Miner,
+        &Cell,
         &Transform,
     )>,
     mut timers: Local<HashMap<Entity, Timer>>,
     time: Res<Time>,
 ) {
-    for (entity, _action, _field, mut hunger, mut planner, miner, transform) in query.iter_mut() {
+    for (entity, _action, _field, mut hunger, mut planner, cell, transform) in query.iter_mut() {
         match timers.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
-                    println!("Progress: {:.2}", progress.fraction());
                     let new_transform = transform.translation + Vec3::from_array([25., 0., 0.]);
-                    spawn_miner(&mut commands, new_transform, miner.speed);
+                    spawn_cell(&mut commands, new_transform, cell.speed);
                     commands.entity(entity).remove::<ReplicateAction>();
                     hunger.0 += 50.0;
                     timers.remove(&entity);
@@ -307,51 +293,52 @@ fn handle_replicate_action(
 
 fn handle_eat_action(
     mut commands: Commands,
-    mut query: Query<
-        (Entity, &EatAction, &Transform, &mut Hunger, &mut AtMushroom),
-        Without<Mushroom>,
-    >,
-    q_mushrooms: Query<(Entity, &Transform), With<Mushroom>>,
+    mut query: Query<(Entity, &EatAction, &Transform, &mut Hunger, &mut AtFood), Without<Food>>,
+    q_food: Query<(Entity, &Transform), With<Food>>,
 ) {
     // println!("Query hits: {}", query.iter().len());
-    for (entity, _action, t_entity, mut hunger, mut at_mushroom) in query.iter_mut() {
+    for (entity, _action, t_entity, mut hunger, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
-        let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
-        let mushroom = find_closest(origin, items);
+        let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
+        let food = find_closest(origin, items);
 
-        // println!("Eating mushroom we found at {:?}", mushroom);
+        // println!("Eating food we found at {:?}", food);
 
-        let (e_mushroom, _t_mushroom, distance) = match mushroom {
+        let (e_food, _t_food, distance) = match food {
             Some(v) => v,
-            None => panic!("No mushroom could be found, HOW?!"),
+            None => panic!("No food could be found, HOW?!"),
         };
 
-        // Make sure we're actually in range to consume this mushroom
+        // Make sure we're actually in range to consume this food
         // If not, remove the EatAction to cancel it, and the planner
         // will figure out what to do next
         if distance < 5.0 {
-            // Before we consume this mushroom, make another query to ensure
+            // Before we consume this food, make another query to ensure
             // it's still there, as it could have been consumed by another
-            // Miner in the same frame, during the query.iter() loop
-            match q_mushrooms.get(e_mushroom) {
+            // Cell in the same frame, during the query.iter() loop
+            match q_food.get(e_food) {
                 Ok(_) => {
                     hunger.0 -= 10.0;
 
                     if hunger.0 < 0.0 {
                         hunger.0 = 0.0;
                     }
-                    commands.entity(e_mushroom).despawn_recursive();
+                    commands.entity(e_food).despawn_recursive();
                 }
                 // Don't consume as it doesn't exists
                 Err(_) => {
-                    warn!("Tried to consume non-existing mushroom");
+                    warn!("Tried to consume non-existing food");
                 }
             }
         }
 
         commands.entity(entity).remove::<EatAction>();
-        at_mushroom.0 = false;
+        at_food.0 = false;
     }
+}
+
+fn print_cell_count(query: Query<Entity, With<Cell>>) {
+    println!("Active Cells: {}", query.iter().len());
 }
 
 fn over_time_needs_change(
@@ -360,7 +347,6 @@ fn over_time_needs_change(
     mut query: Query<(Entity, &mut Hunger, &Transform)>,
 ) {
     let mut rng = rand::thread_rng();
-    println!("Entities: {}", query.iter().len());
     for (entity, mut hunger, transform) in query.iter_mut() {
         // Increase hunger
         let r = rng.gen_range(10.0..20.0);
@@ -371,11 +357,11 @@ fn over_time_needs_change(
             commands.entity(entity).despawn_recursive();
             let translation = transform.translation;
             commands.spawn((
-                DeadMiner,
+                DeadCell,
                 Transform::from_translation(translation),
                 GlobalTransform::from_translation(translation),
             ));
-            println!("Removed starving Miner");
+            println!("Removed starving Cell");
         }
     }
 }
@@ -385,7 +371,7 @@ fn print_current_local_state(
     q_actions: Query<(
         Option<&IsPlanning>,
         Option<&EatAction>,
-        Option<&GoToMushroomAction>,
+        Option<&GoToFoodAction>,
         Option<&ReplicateAction>,
     )>,
     mut q_child: Query<&mut Text, With<StateDebugText>>,
@@ -396,7 +382,7 @@ fn print_current_local_state(
 
         let mut current_action = "Idle";
 
-        let (is_planning, eat, go_to_mushroom, replicate) = q_actions.get(entity).unwrap();
+        let (is_planning, eat, go_to_food, replicate) = q_actions.get(entity).unwrap();
 
         if is_planning.is_some() {
             current_action = "Planning...";
@@ -406,8 +392,8 @@ fn print_current_local_state(
             current_action = "Eating";
         }
 
-        if go_to_mushroom.is_some() {
-            current_action = "Going to mushroom";
+        if go_to_food.is_some() {
+            current_action = "Going to food";
         }
 
         if replicate.is_some() {
@@ -422,16 +408,12 @@ fn print_current_local_state(
     }
 }
 
-fn vec3_to_vec2(v: Vec3) -> Vec2 {
-    Vec2::new(v.x, v.y)
-}
-
-// Worlds shittiest graphics incoming, beware and don't copy, massively wasteful
+// Worlds shittiest graphics incoming, beware and don't copy
 fn draw_gizmos(
     mut gizmos: Gizmos,
-    q_miner: Query<&Transform, With<Miner>>,
-    q_dead: Query<&Transform, With<DeadMiner>>,
-    q_mushrooms: Query<&Transform, With<Mushroom>>,
+    q_cell: Query<&Transform, With<Cell>>,
+    q_dead: Query<&Transform, With<DeadCell>>,
+    q_food: Query<&Transform, With<Food>>,
 ) {
     gizmos
         .grid_2d(
@@ -444,20 +426,20 @@ fn draw_gizmos(
         )
         .outer_edges();
 
-    for miner_transform in q_miner.iter() {
-        gizmos.circle_2d(vec3_to_vec2(miner_transform.translation), 16., NAVY);
+    for cell_transform in q_cell.iter() {
+        gizmos.circle_2d(cell_transform.translation.truncate(), 16., NAVY);
     }
 
-    for mushroom_transform in q_mushrooms.iter() {
+    for food_transform in q_food.iter() {
+        gizmos.circle_2d(food_transform.translation.truncate(), 4., GREEN_YELLOW);
+    }
+
+    for cell_transform in q_dead.iter() {
         gizmos.circle_2d(
-            vec3_to_vec2(mushroom_transform.translation),
-            4.,
-            GREEN_YELLOW,
+            cell_transform.translation.truncate(),
+            12.,
+            Srgba::new(1.0, 0.0, 0.0, 0.1),
         );
-    }
-
-    for miner_transform in q_dead.iter() {
-        gizmos.circle_2d(vec3_to_vec2(miner_transform.translation), 12., ORANGE_RED);
     }
 }
 
@@ -470,29 +452,33 @@ fn main() {
         .add_systems(Startup, startup)
         .add_systems(Update, draw_gizmos)
         .add_systems(
-            Update,
+            FixedUpdate,
             (
                 handle_move_to,
-                handle_go_to_mushroom_action,
+                handle_go_to_food_action,
                 handle_eat_action,
                 handle_replicate_action,
             )
                 .chain(),
         )
         .add_systems(
-            Update,
-            spawn_random_mushroom.run_if(on_timer(Duration::from_millis(100))),
+            FixedUpdate,
+            spawn_random_food.run_if(on_timer(Duration::from_millis(100))),
         )
         .add_systems(
-            Update,
+            FixedUpdate,
             over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
         )
         .add_systems(
-            Update,
+            FixedUpdate,
+            print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
+        )
+        .add_systems(
+            FixedUpdate,
             print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
         );
 
-    register_components!(app, vec![Hunger, AtMushroom]);
+    register_components!(app, vec![Hunger, AtFood]);
 
     app.run();
 }

@@ -30,15 +30,6 @@ impl DatumComponent for IsHungry {
         Datum::Bool(self.0)
     }
 
-    fn set_value(&mut self, new_val: Datum) {
-        self.0 = match new_val {
-            Datum::Bool(b) => b,
-            _ => {
-                panic!("Unimplemented!")
-            }
-        }
-    }
-
     fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
         commands.entity(entity_to_insert_to).insert(self.clone());
     }
@@ -51,15 +42,6 @@ impl DatumComponent for IsTired {
 
     fn field_value(&self) -> Datum {
         Datum::Bool(self.0)
-    }
-
-    fn set_value(&mut self, new_val: Datum) {
-        self.0 = match new_val {
-            Datum::Bool(b) => b,
-            _ => {
-                panic!("Unimplemented!")
-            }
-        }
     }
 
     fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
@@ -156,7 +138,7 @@ fn handle_eat_action(
 ) {
     for (entity, _action, mut is_hungry) in query.iter_mut() {
         println!("We're doing EatAction!");
-        is_hungry.set_value(Datum::Bool(false));
+        is_hungry.0 = false;
         // planner
         //     .state
         //     .fields
@@ -173,7 +155,7 @@ fn handle_sleep_action(
     for (entity, _action, mut is_tired) in query.iter_mut() {
         println!("We're doing SleepAction!");
         // *is_tired = IsTired(false);
-        is_tired.set_value(Datum::Bool(false));
+        is_tired.0 = false;
         // planner
         //     .state
         //     .fields

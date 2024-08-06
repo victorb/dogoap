@@ -46,13 +46,6 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
                 #field_enum_variant(self.0)
             }
 
-            fn set_value(&mut self, new_val: Datum) {
-                self.0 = match new_val {
-                    #field_enum_variant(val) => val,
-                    _ => panic!("Type mismatch when setting value"),
-                }
-            }
-
             fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
                 commands.entity(entity_to_insert_to).insert(self.clone());
             }
@@ -71,6 +64,9 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
             fn increase(val: #field_type) -> Mutator {
                 Mutator::Increment(#snake_case_name.to_string(), #field_enum_variant(val))
             }
+            fn decrease(val: #field_type) -> Mutator {
+                Mutator::Decrement(#snake_case_name.to_string(), #field_enum_variant(val))
+            }
         }
 
         impl Precondition<#field_type> for #name {
@@ -82,6 +78,9 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
             }
             fn is_more(val: #field_type) -> (String, Compare) {
                 (#snake_case_name.to_string(), Compare::GreaterThanEquals(#field_enum_variant(val)))
+            }
+            fn is_less(val: #field_type) -> (String, Compare) {
+                (#snake_case_name.to_string(), Compare::LessThanEquals(#field_enum_variant(val)))
             }
         }
 
@@ -147,24 +146,6 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
                 #field_enum_variant(self.0 as usize)
             }
 
-            // This is where we're stuck, TODO
-            // TODO asd
-            // This needs to actually set the value :/
-            // But we want and it expects, to be a Location
-            // But the trait requires it to be a Datum
-            // Could we turn a Datum::Enum into a Location somehow?
-            // Maybe with macros or whatever
-            fn set_value(&mut self, new_val: Datum) { // This is wrong, should be Datum
-                                                            // according to trait, but is a
-                                                            // Location
-                                                            //
-                // self.0 = new_val
-                // self.0 = match new_val {
-                //     #field_enum_variant(val) => val,
-                //     _ => panic!("Type mismatch when setting value"),
-                // }
-            }
-
             fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
                 commands.entity(entity_to_insert_to).insert(self.clone());
             }
@@ -181,7 +162,10 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
                 Mutator::Set(#snake_case_name.to_string(), #field_enum_variant(val as usize))
             }
             fn increase(val: #field_type) -> Mutator {
-                panic!("Invalid for enums")
+                panic!("You cannot call .increase on a Enum!")
+            }
+            fn decrease(val: #field_type) -> Mutator {
+                panic!("You cannot call .increase on a Enum!")
             }
         }
 
@@ -193,7 +177,10 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
                 (#snake_case_name.to_string(), Compare::NotEquals(#field_enum_variant(val as usize)))
             }
             fn is_more(val: #field_type) -> (String, Compare) {
-                (#snake_case_name.to_string(), Compare::GreaterThanEquals(#field_enum_variant(val as usize)))
+                panic!("You cannot call .is_more on a Enum!")
+            }
+            fn is_less(val: #field_type) -> (String, Compare) {
+                panic!("You cannot call .is_less on a Enum!")
             }
         }
 

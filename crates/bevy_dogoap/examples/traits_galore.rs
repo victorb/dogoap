@@ -33,6 +33,8 @@ struct SleepAction;
 struct GoHomeAction;
 
 fn main() {
+    let goal = Goal::from_reqs(&[Energy::is_more(10.0)]);
+
     let eat_action = EatAction::new()
         .add_precondition(Energy::is_more(10.0))
         .add_mutator(Hunger::increase(25.0));

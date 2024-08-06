@@ -47,6 +47,9 @@ fn successors<'a>(
     actions.iter().filter_map(move |action| {
         if check_preconditions(state, action) {
             let mut new_state = state.clone();
+            if action.effects.len() == 0 {
+                return None;
+            }
             for mutator in &action.effects[0].0.mutators {
                 match mutator {
                     Mutator::Set(key, value) => {

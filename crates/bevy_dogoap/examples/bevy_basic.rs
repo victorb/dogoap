@@ -36,13 +36,13 @@ fn startup(mut commands: Commands) {
 
     // Our first action, the eat action, that sets is_hungry to false
     // but requires is_tired to be set to false first
-    // let eat_action = simple_action(&EatAction::key(), &IsHungry::key(), Datum::Bool(false))
-    //     .with_precondition(&IsTired::key(), Compare::Equals(Datum::Bool(false)));
-    let eat_action = EatAction::new();
+    let eat_action = EatAction::new()
+        .add_mutator(IsHungry::set(false))
+        .add_precondition(IsTired::is(false));
 
     // Our first action, the sleep action, that sets is_tired to false
     // No preconditions in order to sleep
-    let sleep_action = simple_action(&SleepAction::key(), &IsTired::key(), Datum::Bool(false));
+    let sleep_action = SleepAction::new().add_mutator(IsTired::set(false));
 
     // Here we connect our string action with the Component we want to be added
     // for that action
@@ -67,7 +67,8 @@ fn startup(mut commands: Commands) {
     // this function helps us do just that a tiny bit easier, it'll insert all registered components
     planner.insert_datum_components(&mut commands, entity);
 
-    // We could also manually insert them ourselves like this:
+    // We could also manually insert them ourselves like this instead of
+    // planner.insert_datum_components:
     // commands
     //     .entity(entity)
     //     .insert((IsHungry(true), IsTired(true)));
@@ -121,7 +122,7 @@ fn main() {
     app.add_systems(Startup, startup);
     app.add_systems(Update, (handle_eat_action, handle_sleep_action));
 
-    // Run five frames to advance
+    // Run three frames to advance
     for _i in 0..3 {
         app.update();
     }
