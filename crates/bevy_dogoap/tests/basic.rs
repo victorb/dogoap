@@ -9,45 +9,17 @@ const IS_TIRED_KEY: &str = "is_tired";
 const SLEEP_ACTION: &str = "sleep_action";
 
 // This is our component we want to be able to use
-#[derive(Component, Clone, Reflect, Default)]
+#[derive(Component, Clone, Reflect, Default, ActionComponent)]
 struct EatAction;
 
-#[derive(Component, Clone, Reflect, Default)]
+#[derive(Component, Clone, Reflect, Default, ActionComponent)]
 struct SleepAction;
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, DatumComponent)]
 struct IsHungry(bool);
 
-#[derive(Component, Clone)]
+#[derive(Component, Clone, DatumComponent)]
 struct IsTired(bool);
-
-impl DatumComponent for IsHungry {
-    fn field_key(&self) -> String {
-        "is_hungry".to_string()
-    }
-
-    fn field_value(&self) -> Datum {
-        Datum::Bool(self.0)
-    }
-
-    fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
-        commands.entity(entity_to_insert_to).insert(self.clone());
-    }
-}
-
-impl DatumComponent for IsTired {
-    fn field_key(&self) -> String {
-        "is_tired".to_string()
-    }
-
-    fn field_value(&self) -> Datum {
-        Datum::Bool(self.0)
-    }
-
-    fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
-        commands.entity(entity_to_insert_to).insert(self.clone());
-    }
-}
 
 fn startup(mut commands: Commands) {
     // First we define our initial state
@@ -116,10 +88,7 @@ fn startup(mut commands: Commands) {
     // ]);
 
     // But we have a handy macro that kind of makes it a lot easier for us!
-    let actions_map = create_action_map!(
-        (EAT_ACTION, eat_action, EatAction),
-        (SLEEP_ACTION, sleep_action, SleepAction)
-    );
+    let actions_map = create_action_map!((EatAction, eat_action), (SleepAction, sleep_action));
 
     let entity = commands.spawn_empty().id();
 

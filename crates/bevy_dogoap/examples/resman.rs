@@ -18,7 +18,7 @@
 use std::collections::HashMap;
 
 use bevy::{color::palettes::css::*, prelude::*};
-use bevy_dogoap::{create_action_map_v2, prelude::*};
+use bevy_dogoap::prelude::*;
 use dogoap::prelude::*;
 
 fn main() {
@@ -115,7 +115,7 @@ fn setup(mut commands: Commands) {
                 1,
             );
 
-        let actions_map = create_action_map_v2!(
+        let actions_map = create_action_map!(
             (DrinkLemonade, drink_lemonade_action),
             (PickupLemonade, pickup_lemonade_action)
         );

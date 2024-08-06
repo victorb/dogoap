@@ -46,10 +46,7 @@ fn startup(mut commands: Commands) {
 
     // Here we connect our string action with the Component we want to be added
     // for that action
-    let actions_map = create_action_map!(
-        (EatAction::key(), eat_action, EatAction),
-        (SleepAction::key(), sleep_action, SleepAction)
-    );
+    let actions_map = create_action_map!((EatAction, eat_action), (SleepAction, sleep_action));
 
     // To spawn the planner, we first create a new entity
     // You can also use an existing entity if you have one at hand

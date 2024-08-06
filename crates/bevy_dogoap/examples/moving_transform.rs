@@ -1,5 +1,5 @@
 use bevy::{color::palettes::css::*, prelude::*, time::common_conditions::on_timer};
-use bevy_dogoap::{create_action_map_v2, prelude::*};
+use bevy_dogoap::prelude::*;
 use rand::Rng;
 use std::{collections::HashMap, time::Duration};
 
@@ -79,7 +79,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
         .add_mutator(Hunger::increase(1.0))
         .set_cost(2);
 
-    let actions_map = create_action_map_v2!(
+    let actions_map = create_action_map!(
         (EatAction, eat_action),
         (GoToFoodAction, go_to_food_action),
         (ReplicateAction, replicate_action)

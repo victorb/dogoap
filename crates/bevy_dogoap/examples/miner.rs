@@ -177,7 +177,10 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                 Effect::new(EAT_ACTION)
                     .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(25.0)))
                     .with_mutator(Mutator::Decrement(ENERGY_KEY.to_string(), Datum::F64(5.0)))
-                    .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), Location::Outside.datum())),
+                    .with_mutator(Mutator::Set(
+                        LOCATION_KEY.to_string(),
+                        Location::Outside.datum(),
+                    )),
                 1,
             );
 
@@ -247,17 +250,17 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
 
         let actions_map = create_action_map!(
-            (EAT_ACTION, eat_action, EatAction),
-            (SLEEP_ACTION, sleep_action, SleepAction),
-            (MINE_ORE_ACTION, mine_ore_action, MineOreAction),
-            (SMELT_ORE_ACTION, smelt_ore_action, SmeltOreAction),
-            (SELL_METAL_ACTION, sell_metal_action, SellMetalAction),
-            (GO_TO_OUTSIDE, go_to_outside_action, GoToOutsideAction),
-            (GO_TO_HOUSE, go_to_house_action, GoToHouseAction),
-            (GO_TO_MUSHROOM, go_to_mushroom_action, GoToMushroomAction),
-            (GO_TO_ORE, go_to_ore_action, GoToOreAction),
-            (GO_TO_SMELTER, go_to_smelter_action, GoToSmelterAction),
-            (GO_TO_MERCHANT, go_to_merchant_action, GoToMerchantAction),
+            (EatAction, eat_action),
+            (SleepAction, sleep_action),
+            (MineOreAction, mine_ore_action),
+            (SmeltOreAction, smelt_ore_action),
+            (SellMetalAction, sell_metal_action),
+            (GoToOutsideAction, go_to_outside_action),
+            (GoToHouseAction, go_to_house_action),
+            (GoToMushroomAction, go_to_mushroom_action),
+            (GoToOreAction, go_to_ore_action),
+            (GoToSmelterAction, go_to_smelter_action),
+            (GoToMerchantAction, go_to_merchant_action),
         );
 
         let initial_state = (
