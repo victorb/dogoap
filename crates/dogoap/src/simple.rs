@@ -20,14 +20,12 @@ where
     Action {
         key: name.to_string(),
         preconditions: vec![],
-        effects: vec![(
-            Effect {
-                action: name.to_string(),
-                mutators,
-                state: LocalState::new(),
-            },
-            1,
-        )],
+        effects: vec![Effect {
+            action: name.to_string(),
+            mutators,
+            state: LocalState::new(),
+            cost: 1,
+        }],
     }
 }
 
@@ -36,17 +34,15 @@ where
     Datum: From<T>,
 {
     let mut action = simple_multi_mutate_action(name, vec![]);
-    action.effects = vec![(
-        Effect {
-            action: name.to_string(),
-            mutators: vec![Mutator::Increment(
-                key_to_mutate.to_string(),
-                from_value.into(),
-            )],
-            state: LocalState::new(),
-        },
-        1,
-    )];
+    action.effects = vec![Effect {
+        action: name.to_string(),
+        mutators: vec![Mutator::Increment(
+            key_to_mutate.to_string(),
+            from_value.into(),
+        )],
+        state: LocalState::new(),
+        cost: 1,
+    }];
     action
 }
 
@@ -55,17 +51,15 @@ where
     Datum: From<T>,
 {
     let mut action = simple_multi_mutate_action(name, vec![]);
-    action.effects = vec![(
-        Effect {
-            action: name.to_string(),
-            mutators: vec![Mutator::Decrement(
-                key_to_mutate.to_string(),
-                from_value.into(),
-            )],
-            state: LocalState::new(),
-        },
-        1,
-    )];
+    action.effects = vec![Effect {
+        action: name.to_string(),
+        mutators: vec![Mutator::Decrement(
+            key_to_mutate.to_string(),
+            from_value.into(),
+        )],
+        state: LocalState::new(),
+        cost: 1,
+    }];
     action
 }
 

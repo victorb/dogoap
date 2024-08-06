@@ -19,7 +19,7 @@ pub struct Action {
     /// What preconditions need to be true before we can execute this action
     pub preconditions: Vec<(String, Compare)>,
     /// What is the outcome from doing this action
-    pub effects: Vec<(Effect, usize)>,
+    pub effects: Vec<Effect>,
 }
 
 impl Hash for Action {
@@ -48,17 +48,17 @@ impl Action {
         self
     }
 
-    pub fn with_effect(mut self, effect: Effect, cost: usize) -> Self {
-        self.effects.push((effect, cost));
+    pub fn with_effect(mut self, effect: Effect) -> Self {
+        self.effects.push(effect);
         self
     }
 
     pub fn with_mutator(&mut self, mutator: Mutator) -> Self {
         if self.effects.len() == 0 {
-            self.effects = vec![(Effect::new(&self.key.clone()), 1)];
+            self.effects = vec![Effect::new(&self.key.clone())];
             self.clone()
         } else {
-            let ref mut effect = &mut self.effects[0].0;
+            let ref mut effect = &mut self.effects[0];
             effect.mutators.push(mutator);
             // }
 
@@ -66,5 +66,27 @@ impl Action {
             // effect.mutators.push(mutator);
             self.clone()
         }
+    }
+
+    pub fn add_precondition(mut self, precondition: (String, Compare)) -> Self {
+        self.preconditions.push(precondition);
+        self
+    }
+    // TODO currently only handles one effect
+    pub fn add_mutator(mut self, mutator: Mutator) -> Self {
+        if self.effects.len() == 0 {
+            self.effects = vec![Effect::new(&self.key.clone()).with_mutator(mutator)];
+        } else {
+            let mut effect = self.effects[0].clone();
+            effect.mutators.push(mutator);
+            self.effects[0] = effect;
+        }
+        self
+    }
+    pub fn set_cost(mut self, new_cost: usize) -> Self {
+        let mut effect = self.effects[0].clone();
+        effect.cost = new_cost;
+        self.effects[0] = effect;
+        self
     }
 }

@@ -50,7 +50,7 @@ fn successors<'a>(
             if action.effects.len() == 0 {
                 return None;
             }
-            for mutator in &action.effects[0].0.mutators {
+            for mutator in &action.effects[0].mutators {
                 match mutator {
                     Mutator::Set(key, value) => {
                         new_state.data.insert(key.to_string(), *value);
@@ -68,11 +68,12 @@ fn successors<'a>(
                 }
             }
             let new_effect = Effect {
-                action: action.effects[0].0.action.clone(),
-                mutators: action.effects[0].0.mutators.clone(),
+                action: action.effects[0].action.clone(),
+                mutators: action.effects[0].mutators.clone(),
+                cost: action.effects[0].cost,
                 state: new_state,
             };
-            Some((Node::Effect(new_effect), action.effects[0].1))
+            Some((Node::Effect(new_effect), action.effects[0].cost))
         } else {
             None
         }

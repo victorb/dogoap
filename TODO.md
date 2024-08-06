@@ -56,4 +56,4 @@ Why is there three action traits, ActionBuilder, ActionComponent and ActionTrait
 
 ActionTrait should just be impl directly on Action, need to replace some stuff
 
-First replace cost [ ]
+First replace cost [X]

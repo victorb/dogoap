@@ -13,12 +13,13 @@ fn test_basic_bool_setting() {
         action: "eat".to_string(),
         mutators: vec![eat_mutator.clone()],
         state: LocalState::new(),
+        cost: 1,
     };
 
     let eat_action = Action {
         key: "eat".to_string(),
         preconditions: vec![],
-        effects: vec![(eat_consequence, 1)],
+        effects: vec![eat_consequence],
     };
 
     let actions: Vec<Action> = vec![eat_action];
@@ -48,12 +49,13 @@ fn test_action_keys() {
         action: "eat".to_string(),
         mutators: vec![eat_mutator.clone()],
         state: LocalState::new(),
+        cost: 1,
     };
 
     let eat_action = Action {
         key: "eat".to_string(),
         preconditions: vec![],
-        effects: vec![(eat_consequence, 1)],
+        effects: vec![eat_consequence],
     };
 
     let actions: Vec<Action> = vec![eat_action];
@@ -83,12 +85,13 @@ fn test_no_actions_needed() {
         action: "eat".to_string(),
         mutators: vec![eat_mutator.clone()],
         state: LocalState::new(),
+        cost: 1,
     };
 
     let eat_action = Action {
         key: "eat".to_string(),
         preconditions: vec![],
-        effects: vec![(eat_consequence, 1)],
+        effects: vec![eat_consequence],
     };
 
     let actions: Vec<Action> = vec![eat_action];
@@ -469,17 +472,15 @@ fn test_long_plan() {
         .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(50)));
 
     let rob_people = simple_increment_action("rob", "gold", Datum::I64(1))
-        .with_effect(
-            Effect {
-                action: "rob".to_string(),
-                mutators: vec![
-                    Mutator::Decrement("energy".to_string(), Datum::I64(20)),
-                    Mutator::Increment("hunger".to_string(), Datum::I64(20)),
-                ],
-                state: LocalState::default(),
-            },
-            1,
-        )
+        .with_effect(Effect {
+            action: "rob".to_string(),
+            mutators: vec![
+                Mutator::Decrement("energy".to_string(), Datum::I64(20)),
+                Mutator::Increment("hunger".to_string(), Datum::I64(20)),
+            ],
+            state: LocalState::default(),
+            cost: 1,
+        })
         .with_precondition("hunger", Compare::LessThanEquals(Datum::I64(50)))
         .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(50)));
 

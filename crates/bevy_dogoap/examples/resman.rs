@@ -98,7 +98,6 @@ fn setup(mut commands: Commands) {
                         Datum::Enum(Item::Nothing as usize),
                     ))
                     .with_mutator(Mutator::Decrement(Thirst::key(), Datum::F64(10.0))),
-                1,
             );
 
         // Requires us to not be carrying nothing, and leads to us having a lemonade
@@ -112,7 +111,6 @@ fn setup(mut commands: Commands) {
                     CarryingItem::key(),
                     Datum::Enum(Item::Lemonade as usize),
                 )),
-                1,
             );
 
         let actions_map = create_action_map!(

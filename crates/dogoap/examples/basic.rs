@@ -12,14 +12,12 @@ fn main() {
     let eat_action = Action {
         key: "eat".to_string(),
         preconditions: vec![],
-        effects: vec![(
-            Effect {
-                action: "eat".to_string(),
-                mutators: vec![Mutator::Set("is_hungry".to_string(), Datum::Bool(false))],
-                state: LocalState::new(),
-            },
-            1,
-        )],
+        effects: vec![Effect {
+            action: "eat".to_string(),
+            mutators: vec![Mutator::Set("is_hungry".to_string(), Datum::Bool(false))],
+            state: LocalState::new(),
+            cost: 1,
+        }],
     };
 
     let actions: Vec<Action> = vec![eat_action];

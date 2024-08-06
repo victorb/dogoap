@@ -47,7 +47,7 @@ pub trait DatumComponent: Send + Sync {
 }
 
 /// ActionComponent allows you to create Actions directly from your action struct
-/// 
+///
 /// Can be derived with `#derive(ActionComponent)`
 ///
 /// Example:
@@ -74,37 +74,6 @@ pub trait EnumDatum: Send + Sync {
     fn datum(self) -> Datum;
 }
 
-// This could be on the action directly?
-pub trait ActionTrait {
-    fn add_precondition(self, precondition: (String, Compare)) -> Self;
-    fn add_mutator(self, mutator: Mutator) -> Self;
-    fn set_cost(self, new_cost: usize) -> Self;
-}
-
-impl ActionTrait for Action {
-    fn add_precondition(mut self, precondition: (String, Compare)) -> Self {
-        self.preconditions.push(precondition);
-        self
-    }
-    // TODO currently only handles one effect
-    fn add_mutator(mut self, mutator: Mutator) -> Self {
-        if self.effects.len() == 0 {
-            self.effects = vec![(Effect::new(&self.key.clone()).with_mutator(mutator), 1)];
-        } else {
-            let mut effect = self.effects[0].0.clone();
-            let cost = self.effects[0].1;
-            effect.mutators.push(mutator);
-            self.effects[0] = (effect, cost);
-        }
-        self
-    }
-    fn set_cost(mut self, new_cost: usize) -> Self {
-        let effect = self.effects[0].0.clone();
-        self.effects[0] = (effect, new_cost);
-        self
-    }
-}
-
 // Implemented by derive DatumComponent
 pub trait Precondition<T> {
     fn is(val: T) -> (String, Compare);
@@ -118,21 +87,4 @@ pub trait MutatorTrait<T> {
     fn set(val: T) -> Mutator;
     fn increase(val: T) -> Mutator;
     fn decrease(val: T) -> Mutator;
-}
-
-// Simplify adding preconditions from list
-// Could be directly in goal or why is this a trait?
-// We could have this in dogoap
-pub trait GoalTrait {
-    fn from_reqs(preconditions: &[(String, Compare)]) -> Goal;
-}
-
-impl GoalTrait for Goal {
-    fn from_reqs(preconditions: &[(String, Compare)]) -> Goal {
-        let mut goal = Goal::new();
-        for (k, v) in preconditions {
-            goal = goal.with_req(k, v.clone());
-        }
-        goal
-    }
 }

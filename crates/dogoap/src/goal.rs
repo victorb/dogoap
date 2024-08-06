@@ -32,6 +32,14 @@ impl Goal {
         self.requirements.insert(key.to_string(), compare);
         self
     }
+
+    pub fn from_reqs(preconditions: &[(String, Compare)]) -> Goal {
+        let mut goal = Goal::new();
+        for (k, v) in preconditions {
+            goal = goal.with_req(k, v.clone());
+        }
+        goal
+    }
 }
 
 impl Default for Goal {

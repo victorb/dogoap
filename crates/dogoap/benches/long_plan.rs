@@ -27,17 +27,15 @@ mod tests {
             .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(25)));
 
         let rob_people = simple_increment_action("rob", "gold", Datum::I64(1))
-            .with_effect(
-                Effect {
-                    action: "rob".to_string(),
-                    mutators: vec![
-                        Mutator::Decrement("energy".to_string(), Datum::I64(5)),
-                        Mutator::Increment("hunger".to_string(), Datum::I64(5)),
-                    ],
-                    state: LocalState::default(),
-                },
-                1,
-            )
+            .with_effect(Effect {
+                action: "rob".to_string(),
+                mutators: vec![
+                    Mutator::Decrement("energy".to_string(), Datum::I64(5)),
+                    Mutator::Increment("hunger".to_string(), Datum::I64(5)),
+                ],
+                state: LocalState::default(),
+                cost: 1,
+            })
             .with_precondition("hunger", Compare::LessThanEquals(Datum::I64(50)))
             .with_precondition("energy", Compare::GreaterThanEquals(Datum::I64(50)));
 

@@ -181,7 +181,6 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                         LOCATION_KEY.to_string(),
                         Location::Outside.datum(),
                     )),
-                1,
             );
 
         let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Datum::F64(50.0))
@@ -196,7 +195,6 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                     .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(true)))
                     .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(15.0)))
                     .with_mutator(Mutator::Increment(ENERGY_KEY.to_string(), Datum::F64(50.0))),
-                2,
             );
 
         let smelt_ore_action = Action::new(SMELT_ORE_ACTION)
@@ -209,7 +207,6 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                     .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(true)))
                     .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(false))),
                 // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
-                3,
             );
 
         let sell_metal_action = Action::new(SELL_METAL_ACTION)
@@ -220,7 +217,6 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
                     .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(false)))
                     .with_mutator(Mutator::Increment(GOLD_KEY.to_string(), Datum::I64(1))),
                 // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
-                1,
             );
 
         // let sell_metal_action = simple_increment_action(SELL_METAL_ACTION, GOLD_KEY, Field::I64(1))

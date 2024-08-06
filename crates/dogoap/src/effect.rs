@@ -11,6 +11,7 @@ pub struct Effect {
     pub action: String,
     pub mutators: Vec<Mutator>,
     pub state: LocalState,
+    pub cost: usize,
 }
 
 impl Effect {
@@ -19,6 +20,7 @@ impl Effect {
             action: action_name.to_string(),
             mutators: vec![],
             state: LocalState::new(),
+            cost: 1,
         }
     }
     pub fn with_mutator(mut self, mutator: Mutator) -> Self {
