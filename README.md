@@ -8,9 +8,6 @@
 - [`dogoap`](./crates/dogoap/README.md) docs - Standalone library for creation actions, states and goals to be used with the provided planner
 - [`bevy_dogoap`](./crates/bevy_dogoap/README.md) docs - Integration of the `dogoap` library into Bevy
 
-## Resources
-> Some resources if you want to read up on GOAP, STRIPS and related tech
-
 ## Prior Art / Other similar projects
 
 - https://github.com/skyne98/soap - A lot of inspiration taken from this repository, biggest difference is the data-oriented structure that dogoap has
