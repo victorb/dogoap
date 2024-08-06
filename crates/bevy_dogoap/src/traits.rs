@@ -1,3 +1,4 @@
+// bevy_dogoap/src/traits.rs
 use std::any::Any;
 use std::fmt;
 
@@ -12,7 +13,6 @@ pub trait InserterComponent: Send + Sync {
     fn clone_box(&self) -> Box<dyn InserterComponent>;
     fn as_any(&self) -> &dyn Any;
 }
-
 
 impl<T> InserterComponent for T
 where
@@ -38,7 +38,6 @@ impl fmt::Debug for dyn InserterComponent {
     }
 }
 
-
 #[bevy_trait_query::queryable]
 #[reflect_trait]
 pub trait DatumComponent: Send + Sync {
@@ -52,6 +51,44 @@ pub trait ActionComponent: Send + Sync {
     fn key() -> String;
 }
 
+pub trait ActionBuilder {
+    fn new() -> Action;
+}
+
 pub trait EnumDatum: Send + Sync {
     fn datum(self) -> Datum;
+}
+
+pub trait ActionTrait {
+    fn add_precondition(self, precondition: (String, Compare)) -> Self;
+    fn add_mutator(self, mutator: Mutator) -> Self;
+}
+
+impl ActionTrait for Action {
+    fn add_precondition(mut self, precondition: (String, Compare)) -> Self {
+        self.preconditions.push(precondition);
+        self
+    }
+    fn add_mutator(mut self, mutator: Mutator) -> Self {
+        if self.effects.len() == 0 {
+            self.effects = vec![(Effect::new(&self.key.clone()).with_mutator(mutator), 1)];
+        } else {
+            let mut effect = self.effects[0].0.clone();
+            effect.mutators.push(mutator);
+            self.effects[0] = (effect, 1);
+        }
+        self
+    }
+}
+
+pub trait Precondition<T> {
+    fn is(val: T) -> (String, Compare);
+    fn is_not(val: T) -> (String, Compare);
+    fn is_more(val: T) -> (String, Compare);
+    // fn IsLess(val: T) -> (String, Compare);
+}
+
+pub trait MutatorTrait<T> {
+    fn set(val: T) -> Mutator;
+    fn increase(val: T) -> Mutator;
 }

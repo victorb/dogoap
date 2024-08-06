@@ -8,11 +8,14 @@ pub use dogoap::prelude::{
 
 pub use crate::{
     create_action_map, create_goal, create_state, planner::IsPlanning, planner::Planner,
-    register_components
+    register_components,
 };
 
 pub use crate::plugin::DogoapPlugin;
 
-pub use crate::traits::{ActionComponent, DatumComponent, EnumDatum, InserterComponent};
+pub use crate::traits::{
+    ActionBuilder, ActionComponent, ActionTrait, DatumComponent, EnumDatum, InserterComponent,
+    MutatorTrait, Precondition,
+};
 
-pub use macros::{ActionComponent, DatumComponent, EnumDatum};
+pub use macros::{ActionComponent, DatumComponent, EnumComponent, EnumDatum};

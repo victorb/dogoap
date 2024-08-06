@@ -6,7 +6,7 @@
 
 The `dogoap` API is for the standalone Rust library, it has nothing to do with Bevy.
 
-The `bevy_dogoap` API however is all about Bevy, and integrates `dogoap`.
+The `bevy_dogoap` API however is all about Bevy, and integrates `dogoap` with various Bevy concepts.
 
 ## `dogoap` API
 
@@ -51,5 +51,7 @@ The Precondition tells the planner what the LocalState must look like before the
 Currently, has to be a struct with arity 1, where argument is either a `bool`, `int64`, `f64` or `usize`
 
 ### `ActionComponent`
+
+### `EnumDatum`
 
 ### `BevyPlanner`

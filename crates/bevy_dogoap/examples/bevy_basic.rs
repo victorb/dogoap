@@ -36,8 +36,9 @@ fn startup(mut commands: Commands) {
 
     // Our first action, the eat action, that sets is_hungry to false
     // but requires is_tired to be set to false first
-    let eat_action = simple_action(&EatAction::key(), &IsHungry::key(), Datum::Bool(false))
-        .with_precondition(&IsTired::key(), Compare::Equals(Datum::Bool(false)));
+    // let eat_action = simple_action(&EatAction::key(), &IsHungry::key(), Datum::Bool(false))
+    //     .with_precondition(&IsTired::key(), Compare::Equals(Datum::Bool(false)));
+    let eat_action = EatAction::new();
 
     // Our first action, the sleep action, that sets is_tired to false
     // No preconditions in order to sleep
@@ -103,6 +104,7 @@ fn handle_sleep_action(
 
 fn main() {
     let mut app = App::new();
+    app.add_plugins(MinimalPlugins);
 
     // Make sure to include the DogoapPlugin which manages the planner for us
     app.add_plugins(DogoapPlugin);
