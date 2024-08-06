@@ -211,7 +211,7 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
 
 /// ActionComponent allows you to create Actions directly from your action struct
 ///
-/// See [`bevy_dogoap::prelude::ActionBuilder`](../bevy_dogoap/prelude/trait.ActionBuilder.html) for full docs
+/// See [`bevy_dogoap::prelude::ActionComponent`](../bevy_dogoap/prelude/trait.ActionComponent.html) for full docs
 #[proc_macro_derive(ActionComponent)]
 pub fn action_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -223,8 +223,6 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
             fn key() -> String {
                 #snake_case_name.to_owned()
             }
-        }
-        impl ActionBuilder for #name {
             fn new() -> Action {
                 Action::new(#snake_case_name)
             }

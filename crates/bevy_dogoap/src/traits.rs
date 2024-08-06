@@ -46,11 +46,9 @@ pub trait DatumComponent: Send + Sync {
     fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity);
 }
 
-pub trait ActionComponent: Send + Sync {
-    fn key() -> String;
-}
-
-/// ActionBuilder allows you to create Actions directly from your action struct
+/// ActionComponent allows you to create Actions directly from your action struct
+/// 
+/// Can be derived with `#derive(ActionComponent)`
 ///
 /// Example:
 ///
@@ -65,7 +63,10 @@ pub trait ActionComponent: Send + Sync {
 ///     Action::new("my_action")
 /// );
 /// ```
-pub trait ActionBuilder {
+pub trait ActionComponent: Send + Sync {
+    /// Gets the action key but in snake_case ("AtLocation" becomes "at_location")
+    fn key() -> String;
+    /// Creates a new [`Action`] with our snake_case key
     fn new() -> Action;
 }
 
@@ -73,6 +74,7 @@ pub trait EnumDatum: Send + Sync {
     fn datum(self) -> Datum;
 }
 
+// This could be on the action directly?
 pub trait ActionTrait {
     fn add_precondition(self, precondition: (String, Compare)) -> Self;
     fn add_mutator(self, mutator: Mutator) -> Self;
@@ -103,6 +105,7 @@ impl ActionTrait for Action {
     }
 }
 
+// Implemented by derive DatumComponent
 pub trait Precondition<T> {
     fn is(val: T) -> (String, Compare);
     fn is_not(val: T) -> (String, Compare);
@@ -110,12 +113,16 @@ pub trait Precondition<T> {
     fn is_less(val: T) -> (String, Compare);
 }
 
+// Implemented by derive DatumComponent in order to mutate
 pub trait MutatorTrait<T> {
     fn set(val: T) -> Mutator;
     fn increase(val: T) -> Mutator;
     fn decrease(val: T) -> Mutator;
 }
 
+// Simplify adding preconditions from list
+// Could be directly in goal or why is this a trait?
+// We could have this in dogoap
 pub trait GoalTrait {
     fn from_reqs(preconditions: &[(String, Compare)]) -> Goal;
 }

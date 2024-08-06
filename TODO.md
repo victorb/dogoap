@@ -32,7 +32,28 @@
 
     DatumComponent
     EnumDatum
+
     GoalTrait
-    InserterComponent - Allows a Component to insert itself dynamically
     MutatorTrait
     Precondition
+
+    // Internal mostly
+    InserterComponent
+
+
+
+InserterComponent is really something we use to have our Datum inside of Bevy ECS, and syncing
+the data from those to the LocalState of our planner
+
+Should come up with a better name.
+
+
+
+
+
+Why is there three action traits, ActionBuilder, ActionComponent and ActionTrait?
+
+
+ActionTrait should just be impl directly on Action, need to replace some stuff
+
+First replace cost [ ]

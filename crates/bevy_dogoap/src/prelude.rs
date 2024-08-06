@@ -14,7 +14,7 @@ pub use crate::{
 pub use crate::plugin::DogoapPlugin;
 
 pub use crate::traits::{
-    ActionBuilder, ActionComponent, ActionTrait, DatumComponent, EnumDatum, GoalTrait,
+    ActionComponent, ActionTrait, DatumComponent, EnumDatum, GoalTrait,
     InserterComponent, MutatorTrait, Precondition,
 };
 
