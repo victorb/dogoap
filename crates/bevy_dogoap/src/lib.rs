@@ -1,11 +1,12 @@
+#![feature(trivial_bounds)]
 #![doc = include_str!("../README.md")]
 
 // Public API
 pub use dogoap::prelude::*;
 
-mod planner;
-mod traits;
 mod macros;
+mod planner;
 mod plugin;
+mod traits;
 
 pub mod prelude;

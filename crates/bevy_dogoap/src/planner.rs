@@ -8,32 +8,21 @@ use bevy::tasks::{AsyncComputeTaskPool, Task};
 use dogoap::prelude::*;
 
 use crate::prelude::*;
-use crate::traits::InserterComponent;
 
-// This connects the action key to the action
-type ActionsMap = HashMap<String, Action>;
-// This connects the action key to the DatumComponent
-type ActionsComponentsMap = HashMap<String, Box<dyn InserterComponent>>;
-type ActionsCombinedMap = HashMap<String, (Action, Box<dyn InserterComponent>)>;
+type ActionsMap = HashMap<String, (Action, Box<dyn InserterComponent>)>;
 
 type DatumComponents = Vec<Box<dyn DatumComponent>>;
 
 #[derive(Component, Reflect)]
 pub struct Planner {
-    /// The current Datum state
     pub state: LocalState,
-    /// Possible goals
     pub goals: Vec<Goal>,
-    /// Current goal, if any
     pub current_goal: Option<Goal>,
-    /// Currently executing action
     pub current_action: Option<Action>,
-    /// All available actions
-    pub actions_map: ActionsMap,
 
+    // TODO figure out how to get reflect to work, if possible
     #[reflect(ignore)]
-    pub components_map: ActionsComponentsMap,
-
+    pub actions_map: ActionsMap,
     #[reflect(ignore)]
     pub datum_components: DatumComponents,
 
@@ -42,6 +31,7 @@ pub struct Planner {
     pub always_plan: bool,
     /// If the Planner should remove the current goal if it cannot find any plan to reach it
     pub remove_goal_on_no_plan_found: bool,
+    /// Internal prepared vector of just [`Action`]
     actions_for_dogoap: Vec<Action>,
 }
 
@@ -68,18 +58,13 @@ pub struct ComputePlan(Task<Option<(Vec<dogoap::prelude::Node>, usize)>>);
 pub struct IsPlanning;
 
 impl Planner {
-    pub fn new(
-        initial_state: DatumComponents,
-        goals: Vec<Goal>,
-        combined_map: ActionsCombinedMap,
-    ) -> Self {
+    pub fn new(initial_state: DatumComponents, goals: Vec<Goal>, actions_map: ActionsMap) -> Self {
         let mut actions_for_dogoap: Vec<Action> = vec![];
-        let mut components_map: ActionsComponentsMap = HashMap::new();
-        let mut actions_map: ActionsMap = HashMap::new();
+        // let mut actions_map: ActionsMap = HashMap::new();
 
-        for (key, (action, component)) in combined_map.iter() {
-            actions_map.insert(key.clone().to_string(), action.clone());
-            components_map.insert(key.clone().to_string(), component.clone_box());
+        for (key, (action, component)) in actions_map.iter() {
+            // actions_map.insert(key.clone().to_string(), action.clone());
+            // components_map.insert(key.clone().to_string(), component.clone_box());
             actions_for_dogoap.push(action.clone());
         }
 
@@ -89,7 +74,6 @@ impl Planner {
             current_goal: goals.first().cloned(),
             goals,
             actions_map,
-            components_map,
             current_action: None,
             always_plan: true,
             remove_goal_on_no_plan_found: true,
@@ -184,25 +168,25 @@ pub fn handle_planner_tasks(
                         Some(first_effect) => {
                             let action_name = first_effect.action.clone();
 
-                            let found_action = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
+                            let (found_action, action_component) = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
 
                             if planner.current_action.is_some()
                                 && Some(found_action) != planner.current_action.as_ref()
                             {
                                 // We used to work towards a different action, so lets remove that one first.
                                 // TODO remove specific one, but for now, remove all of them?
-                                let found_component = planner
-                                    .components_map
-                                    .get(&planner.current_action.clone().unwrap().key)
-                                    .unwrap();
-                                found_component.remove(&mut commands, entity);
+                                // let found_component = planner
+                                //     .components_map
+                                //     .get(&planner.current_action.clone().unwrap().key)
+                                //     .unwrap();
+                                action_component.remove(&mut commands, entity);
                             }
 
                             // TODO this is a bit horrible... Not only calling `.unwrap`, but the whole
                             // "do string match to find the right Component", slightly cursed
-                            let found_component =
-                                planner.components_map.get(&found_action.key).unwrap();
-                            found_component.insert(&mut commands, entity);
+                            // let found_component =
+                            //     planner.components_map.get(&found_action.key).unwrap();
+                            action_component.insert(&mut commands, entity);
                             planner.current_action = Some(found_action.clone());
                         }
                         None => {

@@ -6,16 +6,15 @@ use bevy::prelude::{reflect_trait, Commands, Component, Entity};
 use dogoap::prelude::{Action, Compare, Datum, Mutator};
 
 #[reflect_trait]
-pub trait InserterComponent: Send + Sync {
+pub trait InserterComponent: Send + Sync + 'static {
     fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity);
     fn remove(&self, commands: &mut Commands, entity_to_remove_from: Entity);
     fn clone_box(&self) -> Box<dyn InserterComponent>;
-    fn as_any(&self) -> &dyn Any;
 }
 
 impl<T> InserterComponent for T
 where
-    T: Component + Clone + Send + Sync,
+    T: Component + Clone + Send + Sync + 'static,
 {
     fn insert(&self, commands: &mut Commands, entity_to_insert_to: Entity) {
         commands.entity(entity_to_insert_to).insert(T::clone(self));
@@ -25,9 +24,6 @@ where
     }
     fn clone_box(&self) -> Box<dyn InserterComponent> {
         Box::new(self.clone())
-    }
-    fn as_any(&self) -> &dyn Any {
-        self
     }
 }
 
