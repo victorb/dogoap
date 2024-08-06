@@ -1,7 +1,10 @@
 use bevy::{color::palettes::css::*, prelude::*, time::common_conditions::on_timer};
 use bevy_dogoap::prelude::*;
 use rand::Rng;
-use std::{collections::HashMap, time::Duration};
+use std::{
+    collections::{HashMap, HashSet},
+    time::Duration,
+};
 
 // This is a basic example on how you can use Dogoap while moving your agent around
 
@@ -9,13 +12,11 @@ use std::{collections::HashMap, time::Duration};
 #[derive(Component)]
 struct Cell {
     speed: f32,
+    age: usize,
 }
 
 #[derive(Component)]
 struct DeadCell;
-
-#[derive(Component)]
-struct BusyObject(Entity);
 
 #[derive(Component)]
 struct Food;
@@ -104,7 +105,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     commands
         .spawn((
             Name::new("Cell"),
-            Cell { speed },
+            Cell { speed, age: 0 },
             planner,
             initial_state,
             Transform::from_translation(position),
@@ -190,7 +191,7 @@ fn handle_move_to(
                     transform.translation += direction * cell.speed * time.delta_seconds();
                 } else {
                     commands.entity(entity).remove::<MoveTo>();
-                    commands.entity(destination_entity).remove::<BusyObject>();
+                    // commands.entity(destination_entity).remove::<BusyObject>();
                 }
             }
             None => {
@@ -207,52 +208,69 @@ fn handle_go_to_food_action(
         (Entity, &GoToFoodAction, &Transform, &mut AtFood),
         (Without<Food>, Without<MoveTo>),
     >,
-    q_food: Query<(Entity, &Transform), (With<Food>, Without<BusyObject>)>,
-    q_busy: Query<&BusyObject>,
+    q_food: Query<(Entity, &Transform), With<Food>>,
+    mut targeted_food: Local<HashMap<Entity, Entity>>,
 ) {
     for (entity, _action, t_entity, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
-        let food = find_closest(origin, items);
 
-        let (e_food, t_food, distance) = match food {
+        let foods = find_closest(origin, items);
+
+        let mut selected_food = None;
+        for (e_food, t_food, distance) in foods.iter() {
+            match targeted_food.get(e_food) {
+                Some(cell_entity) if *cell_entity == entity => {
+                    // This food is targeted by us, select it
+                    selected_food = Some((e_food, t_food, distance));
+                    break;
+                }
+                Some(_) => {
+                    // This food is targeted by another entity, skip it
+                    continue;
+                }
+                None => {
+                    // This food is not targeted, select it
+                    selected_food = Some((e_food, t_food, distance));
+                    break;
+                }
+            }
+        }
+
+        let (e_food, t_food, distance) = match selected_food {
             Some(v) => v,
             None => {
-                // Do nothing...
+                // No available food found, do nothing
                 continue;
             }
         };
 
-        match q_busy.get(e_food) {
-            Ok(busy) => {
-                if busy.0 != entity {
-                    continue;
-                }
-            }
-            Err(_) => {}
-        }
+        targeted_food.insert(*e_food, entity);
 
-        if distance > 5.0 {
-            commands.entity(e_food).insert(BusyObject(entity));
-            commands.entity(entity).insert(MoveTo(t_food, e_food));
+        if *distance > 5.0 {
+            // commands.entity(e_food).insert(BusyObject(entity));
+            commands.entity(entity).insert(MoveTo(*t_food, *e_food));
         } else {
             // Consume food!
             at_food.0 = true;
             commands.entity(entity).remove::<GoToFoodAction>();
+            targeted_food.remove(&e_food);
         }
     }
 }
 
-fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Option<(Entity, Vec3, f32)> {
-    items
+fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Vec<(Entity, Vec3, f32)> {
+    let mut closest: Vec<(Entity, Vec3, f32)> = items
         .into_iter()
-        .fold(None, |closest, (entity, transform)| {
+        .map(|(entity, transform)| {
             let distance = transform.translation.distance(origin);
-            match closest {
-                Some((_, _, d)) if distance >= d => closest,
-                _ => Some((entity, transform.translation, distance)),
-            }
+            (entity, transform.translation, distance)
         })
+        .collect();
+
+    closest.sort_by(|a, b| a.2.partial_cmp(&b.2).unwrap_or(std::cmp::Ordering::Equal));
+    closest.truncate(10);
+    closest
 }
 
 fn handle_replicate_action(
@@ -300,7 +318,8 @@ fn handle_eat_action(
     for (entity, _action, t_entity, mut hunger, mut at_food) in query.iter_mut() {
         let origin = t_entity.translation;
         let items: Vec<(Entity, Transform)> = q_food.iter().map(|(e, t)| (e, *t)).collect();
-        let food = find_closest(origin, items);
+        let foods = find_closest(origin, items);
+        let food = foods.first();
 
         // println!("Eating food we found at {:?}", food);
 
@@ -312,18 +331,18 @@ fn handle_eat_action(
         // Make sure we're actually in range to consume this food
         // If not, remove the EatAction to cancel it, and the planner
         // will figure out what to do next
-        if distance < 5.0 {
+        if *distance < 5.0 {
             // Before we consume this food, make another query to ensure
             // it's still there, as it could have been consumed by another
             // Cell in the same frame, during the query.iter() loop
-            match q_food.get(e_food) {
+            match q_food.get(*e_food) {
                 Ok(_) => {
                     hunger.0 -= 10.0;
 
                     if hunger.0 < 0.0 {
                         hunger.0 = 0.0;
                     }
-                    commands.entity(e_food).despawn_recursive();
+                    commands.entity(*e_food).despawn_recursive();
                 }
                 // Don't consume as it doesn't exists
                 Err(_) => {
@@ -367,7 +386,7 @@ fn over_time_needs_change(
 }
 
 fn print_current_local_state(
-    query: Query<(Entity, &Hunger, &Children)>,
+    query: Query<(Entity, &Cell, &Hunger, &Children)>,
     q_actions: Query<(
         Option<&IsPlanning>,
         Option<&EatAction>,
@@ -377,7 +396,8 @@ fn print_current_local_state(
     mut q_child: Query<&mut Text, With<StateDebugText>>,
 ) {
     // let planner = query.get_single().unwrap();
-    for (entity, hunger, children) in query.iter() {
+    for (entity, cell, hunger, children) in query.iter() {
+        let age = cell.age;
         let hunger = hunger.0;
 
         let mut current_action = "Idle";
@@ -403,7 +423,7 @@ fn print_current_local_state(
         for &child in children.iter() {
             let mut text = q_child.get_mut(child).unwrap();
             text.sections[0].value =
-                format!("{current_action}\nHunger: {hunger:.0}\nEntity: {entity}");
+                format!("{current_action}\nAge: {age}\nHunger: {hunger:.0}\nEntity: {entity}");
         }
     }
 }
@@ -411,7 +431,7 @@ fn print_current_local_state(
 // Worlds shittiest graphics incoming, beware and don't copy
 fn draw_gizmos(
     mut gizmos: Gizmos,
-    q_cell: Query<&Transform, With<Cell>>,
+    q_cell: Query<(&Transform, &Cell)>,
     q_dead: Query<&Transform, With<DeadCell>>,
     q_food: Query<&Transform, With<Food>>,
 ) {
@@ -426,8 +446,10 @@ fn draw_gizmos(
         )
         .outer_edges();
 
-    for cell_transform in q_cell.iter() {
-        gizmos.circle_2d(cell_transform.translation.truncate(), 16., NAVY);
+    for (cell_transform, cell) in q_cell.iter() {
+        let color = NAVY;
+        color.lighter((cell.age / 100) as f32);
+        gizmos.circle_2d(cell_transform.translation.truncate(), 12., color);
     }
 
     for food_transform in q_food.iter() {
@@ -440,6 +462,12 @@ fn draw_gizmos(
             12.,
             Srgba::new(1.0, 0.0, 0.0, 0.1),
         );
+    }
+}
+
+fn increment_age(mut query: Query<&mut Cell>) {
+    for mut cell in query.iter_mut() {
+        cell.age += 1;
     }
 }
 
@@ -472,6 +500,10 @@ fn main() {
         .add_systems(
             FixedUpdate,
             print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
+        )
+        .add_systems(
+            FixedUpdate,
+            increment_age.run_if(on_timer(Duration::from_millis(1000))),
         )
         .add_systems(
             FixedUpdate,
