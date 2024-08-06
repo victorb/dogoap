@@ -14,6 +14,7 @@
 ## Prior Art / Other similar projects
 
 - https://github.com/skyne98/soap - A lot of inspiration taken from this repository, biggest difference is the data-oriented structure that dogoap has
+- https://github.com/dmackdev/bevy_goap - Native Bevy GOAP library, API interface isn't ideal though
 
 ## License
 
