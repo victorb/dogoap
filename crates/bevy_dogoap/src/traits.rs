@@ -50,6 +50,21 @@ pub trait ActionComponent: Send + Sync {
     fn key() -> String;
 }
 
+/// ActionBuilder allows you to create Actions directly from your action struct
+///
+/// Example:
+///
+/// ```rust
+/// # use bevy_dogoap::prelude::*;
+/// #[derive(ActionComponent)]
+/// struct MyAction;
+///
+/// // Used as a shorter way of creating a new Action with snake_case name
+/// assert_eq!(
+///     MyAction::new(),
+///     Action::new("my_action")
+/// );
+/// ```
 pub trait ActionBuilder {
     fn new() -> Action;
 }

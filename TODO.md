@@ -5,8 +5,8 @@
 - [ ] `create_state!` to return `tuple` with components + state
 - [ ] Improve derive so only `Component` + `ActionComponent` can be used, instead of also `Default` and `Clone`
     - Hmmmmmmm, not sure about this...
-- [ ] Ensure that the macros (create_goal!, simple_action, create_action_map!, create_state!, and register_components!) follow idiomatic practices and provide clear documentation for their usage and functionality.
-- [ ] Consider providing a more streamlined way to set up the planner, goals, and actions. For example, you could create a builder pattern or a setup function that takes care of creating the planner, inserting components, and adding the planner to the entity in a single step.
+- [ ] Clear docs for macros about usage
+- [ ] Figure out if we can abstract "creating the planner, inserting components, and adding the planner to entity" in a single step.
     - Addressed by some sort of DSL perhaps
 
 ## Documentation
@@ -19,3 +19,20 @@
 
 - [ ] Come up with a better name than "DOGOAP"?
     - This can come when it comes...
+
+- [ ] Examples should have clear use cases we want to show off
+
+
+
+--- Sort out the traits naming drama
+
+    ActionBuilder
+    ActionComponent
+    ActionTrait
+
+    DatumComponent
+    EnumDatum
+    GoalTrait
+    InserterComponent - Allows a Component to insert itself dynamically
+    MutatorTrait
+    Precondition

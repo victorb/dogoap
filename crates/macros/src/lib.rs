@@ -5,6 +5,26 @@ use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
 use syn::{parse_macro_input, Data, DeriveInput, Fields};
 
+/// DatumComponent implements DatumComponent, MutatorTrait and Precondition trait
+///
+/// Example:
+///
+/// ```ignore
+/// #[derive(DatumComponent)]
+/// struct Hunger(f32);
+///
+/// // Used as a Mutator:
+/// assert_eq!(
+///     Hunger::increase(1.0),
+///     Mutator::Increment("hunger".to_string(), Datum::F64(2.0))
+/// );
+///
+/// // Used as a Precondition:
+/// assert_eq!(
+///     Hunger::is_less(10.0),
+///     ("hunger".to_string(), Compare::LessThanEquals(Datum::F64(10.0)))
+/// )
+/// ```
 #[proc_macro_derive(DatumComponent)]
 pub fn datum_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -83,26 +103,36 @@ pub fn datum_component_derive(input: TokenStream) -> TokenStream {
                 (#snake_case_name.to_string(), Compare::LessThanEquals(#field_enum_variant(val)))
             }
         }
-
-        // impl<T> MutatorTrait<T> for #name
-        //     where
-        //         T: EnumDatum
-        //     {
-        //         fn set(val: T) -> Mutator {
-        //             Mutator::Set(#snake_case_name.to_string(), val.datum())
-        //         }
-        //     }
-
-
-        // impl MutatorTrait<#field_type> for #name {
-        //     fn set(val: #field_type) -> Mutator {
-        //         Mutator::Set(#snake_case_name.to_string(), Datum::Enum(val as usize))
-        //     }
-        // }
     };
     gen.into()
 }
 
+/// EnumComponent is specifically for DatumComponent's that use an Enum/EnumDatum
+///
+/// Example:
+///
+/// ```ignore
+/// #[derive(EnumDatum)]
+/// struct Location {
+///     Home,
+///     Outside
+/// }
+///
+/// #[derive(EnumComponent)]
+/// struct AtLocation(Location);
+///
+/// // Used as a Mutator:
+/// assert_eq!(
+///     AtLocation::set(Location::Home),
+///     Mutator::Increment("at_location".to_string(), Datum::Enum(Location::Home as usize))
+/// );
+///
+/// // Used as a Precondition:
+/// assert_eq!(
+///     AtLocation::is(Location::Outside),
+///     ("at_location".to_string(), Compare::Equals(Datum::Enum(Location::Outside as usize)))
+/// )
+/// ```
 #[proc_macro_derive(EnumComponent)]
 pub fn enum_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -117,14 +147,6 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
                 if let Some(field) = fields.unnamed.first() {
                     let ty = &field.ty;
                     ty
-                    // let variant = match ty.to_token_stream().to_string().as_str() {
-                    //     "bool" => quote! { Datum::Bool },
-                    //     "f64" => quote! { Datum::F64 },
-                    //     "usize" => quote! { Datum::Enum },
-                    //     "i64" => quote! { Datum::I64 },
-                    //     _ => panic!("Unsupported type for DatumComponent"),
-                    // };
-                    // (ty, variant)
                 } else {
                     panic!("Expected a tuple struct with one Datum")
                 }
@@ -183,26 +205,13 @@ pub fn enum_component_derive(input: TokenStream) -> TokenStream {
                 panic!("You cannot call .is_less on a Enum!")
             }
         }
-
-        // impl<T> MutatorTrait<T> for #name
-        //     where
-        //         T: EnumDatum
-        //     {
-        //         fn set(val: T) -> Mutator {
-        //             Mutator::Set(#snake_case_name.to_string(), val.datum())
-        //         }
-        //     }
-
-
-        // impl MutatorTrait<#field_type> for #name {
-        //     fn set(val: #field_type) -> Mutator {
-        //         Mutator::Set(#snake_case_name.to_string(), Datum::Enum(val as usize))
-        //     }
-        // }
     };
     gen.into()
 }
 
+/// ActionComponent allows you to create Actions directly from your action struct
+///
+/// See [`bevy_dogoap::prelude::ActionBuilder`](../bevy_dogoap/prelude/trait.ActionBuilder.html) for full docs
 #[proc_macro_derive(ActionComponent)]
 pub fn action_component_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
@@ -224,6 +233,9 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
+/// EnumDatum implements EnumDatum trait so you can use it with an EnumComponent
+///
+/// See docs for [`EnumComponent`] for example usage
 #[proc_macro_derive(EnumDatum)]
 pub fn enum_datum_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);

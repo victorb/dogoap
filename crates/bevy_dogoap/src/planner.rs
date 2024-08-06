@@ -8,6 +8,7 @@ use bevy::tasks::{AsyncComputeTaskPool, Task};
 use dogoap::prelude::*;
 
 use crate::prelude::*;
+use crate::traits::InserterComponent;
 
 type ActionsMap = HashMap<String, Action>;
 type ActionsComponentsMap = HashMap<String, Box<dyn InserterComponent>>;
@@ -56,6 +57,9 @@ impl fmt::Debug for Planner {
 #[derive(Component)]
 pub struct ComputePlan(Task<Option<(Vec<dogoap::prelude::Node>, usize)>>);
 
+/// This Component gets added when the planner for an Entity is currently planning,
+/// and removed once a plan has been created. Normally this will take under 1ms,
+/// but if you have lots of actions and possible states, it can take longer
 #[derive(Component)]
 pub struct IsPlanning;
 
