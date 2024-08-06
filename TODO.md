@@ -26,9 +26,9 @@
 
 --- Sort out the traits naming drama
 
-    ActionBuilder
+    ~ActionBuilder~
     ActionComponent
-    ActionTrait
+    ~ActionTrait~
 
     DatumComponent
     EnumDatum
@@ -57,3 +57,5 @@ Why is there three action traits, ActionBuilder, ActionComponent and ActionTrait
 ActionTrait should just be impl directly on Action, need to replace some stuff
 
 First replace cost [X]
+
+We need to figure out how to get rid of as much code as we humanly could.

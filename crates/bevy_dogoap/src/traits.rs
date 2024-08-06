@@ -1,10 +1,9 @@
-// bevy_dogoap/src/traits.rs
 use std::any::Any;
 use std::fmt;
 
-use bevy::prelude::*;
+use bevy::prelude::{reflect_trait, Commands, Component, Entity};
 
-use dogoap::prelude::*;
+use dogoap::prelude::{Action, Compare, Datum, Mutator};
 
 #[reflect_trait]
 pub trait InserterComponent: Send + Sync {

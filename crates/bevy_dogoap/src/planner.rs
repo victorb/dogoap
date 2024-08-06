@@ -10,7 +10,9 @@ use dogoap::prelude::*;
 use crate::prelude::*;
 use crate::traits::InserterComponent;
 
+// This connects the action key to the action
 type ActionsMap = HashMap<String, Action>;
+// This connects the action key to the DatumComponent
 type ActionsComponentsMap = HashMap<String, Box<dyn InserterComponent>>;
 type ActionsCombinedMap = HashMap<String, (Action, Box<dyn InserterComponent>)>;
 
@@ -18,13 +20,15 @@ type DatumComponents = Vec<Box<dyn DatumComponent>>;
 
 #[derive(Component, Reflect)]
 pub struct Planner {
+    /// The current Datum state
     pub state: LocalState,
+    /// Possible goals
     pub goals: Vec<Goal>,
-
+    /// Current goal, if any
     pub current_goal: Option<Goal>,
-
+    /// Currently executing action
     pub current_action: Option<Action>,
-
+    /// All available actions
     pub actions_map: ActionsMap,
 
     #[reflect(ignore)]
@@ -113,6 +117,7 @@ impl Planner {
     }
 }
 
+/// This system "syncs" our [`DatumComponent`]s with the LocalState in the [`Planner`]
 pub fn update_planner_local_state(
     local_field_components: Query<(Entity, &dyn DatumComponent)>,
     mut q_planner: Query<(Entity, &mut Planner)>,
@@ -128,6 +133,8 @@ pub fn update_planner_local_state(
     }
 }
 
+/// This system is responsible for finding [`Planner`]s that aren't alreay computing a new plan,
+/// and creates a new task for generating a new plan
 pub fn create_planner_tasks(
     mut commands: Commands,
     query: Query<(Entity, &Planner), Without<ComputePlan>>,
@@ -141,7 +148,7 @@ pub fn create_planner_tasks(
                 let task = thread_pool.spawn(async move {
                     let start = Instant::now();
 
-                    // WARN this is the part that can sometimes be slow and why we use AsyncComputePool
+                    // WARN this is the part that can be slow for large search spaces and why we use AsyncComputePool
                     let plan = make_plan(&state, &actions[..], &goal);
                     let duration_ms = start.elapsed().as_millis();
 
@@ -160,6 +167,9 @@ pub fn create_planner_tasks(
     }
 }
 
+/// This system is responsible for polling active [`ComputePlan`]s and switch the `current_action` if it changed
+/// since last time. It'll add the [`ActionComponent`] as a Component to the same Entity the [`Planner`] is on, and
+/// remove all the others, signalling that [`Action`] is currently active.
 pub fn handle_planner_tasks(
     mut commands: Commands,
     mut query: Query<(Entity, &mut ComputePlan, &mut Planner)>,
