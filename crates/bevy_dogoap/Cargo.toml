@@ -8,6 +8,7 @@ homepage = "https://github.com/victorb/dogoap"
 
 [dependencies]
 bevy = "0.14.0"
+bevy-inspector-egui = "0.25.1"
 bevy-trait-query = { git = "https://github.com/RobWalt/bevy-trait-query.git", rev = "215b9068e8457d96ddcd4c8efa9605ba0f8feda5", version = "0.5.1" }
 bevy_framepace = "0.17.1"
 dogoap = { path = "../dogoap", version = "*"}

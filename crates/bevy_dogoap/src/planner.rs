@@ -31,6 +31,11 @@ pub struct Planner {
     pub always_plan: bool,
     /// If the Planner should remove the current goal if it cannot find any plan to reach it
     pub remove_goal_on_no_plan_found: bool,
+    /// plan_next_tick works like a toggle, that once you've set it to true, it'll make a new plan once
+    /// then turn it to false. Combine with always_plan set to false and you can manually decide when
+    /// new plans should be made.
+    pub plan_next_tick: bool,
+
     /// Internal prepared vector of just [`Action`]
     actions_for_dogoap: Vec<Action>,
 }
@@ -77,6 +82,7 @@ impl Planner {
             current_action: None,
             always_plan: true,
             remove_goal_on_no_plan_found: true,
+            plan_next_tick: false,
             actions_for_dogoap,
         };
         ret.update_localstate();
@@ -163,7 +169,13 @@ pub fn handle_planner_tasks(
             commands.entity(entity).remove::<ComputePlan>();
             match p {
                 Some((plan, _cost)) => {
+                    println!("This is the plan we found:");
+
+                    print_plan((plan.clone(), _cost));
                     let effects = get_effects_from_plan(plan);
+
+                    // println!("Effects: \n{:#?}", effects);
+
                     match effects.first() {
                         Some(first_effect) => {
                             let action_name = first_effect.action.clone();
@@ -180,6 +192,7 @@ pub fn handle_planner_tasks(
                                 //     .get(&planner.current_action.clone().unwrap().key)
                                 //     .unwrap();
                                 action_component.remove(&mut commands, entity);
+                                println!("Removed previous component {action_name}");
                             }
 
                             // TODO this is a bit horrible... Not only calling `.unwrap`, but the whole
@@ -188,6 +201,7 @@ pub fn handle_planner_tasks(
                             //     planner.components_map.get(&found_action.key).unwrap();
                             action_component.insert(&mut commands, entity);
                             planner.current_action = Some(found_action.clone());
+                            println!("Set new action");
                         }
                         None => {
                             if planner.remove_goal_on_no_plan_found {

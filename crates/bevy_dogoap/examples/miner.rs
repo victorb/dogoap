@@ -42,20 +42,20 @@ enum Location {
 }
 
 // All the keys for our actions
-const EAT_ACTION: &str = "eat";
-const SLEEP_ACTION: &str = "sleep";
-const MINE_ORE_ACTION: &str = "mine_ore";
-const SMELT_ORE_ACTION: &str = "smelt_ore";
-const SELL_METAL_ACTION: &str = "sell_metal";
+const EAT_ACTION: &str = "eat_action";
+const SLEEP_ACTION: &str = "sleep_action";
+const MINE_ORE_ACTION: &str = "mine_ore_action";
+const SMELT_ORE_ACTION: &str = "smelt_ore_action";
+const SELL_METAL_ACTION: &str = "sell_metal_action";
 // const UPGRADE_HOUSE_ACTION: &str = "upgrade_house";
 
 // All actions related to locations
-const GO_TO_HOUSE: &str = "go_to_house";
-const GO_TO_OUTSIDE: &str = "go_to_outside";
-const GO_TO_MUSHROOM: &str = "go_to_mushroom";
-const GO_TO_ORE: &str = "go_to_ore";
-const GO_TO_SMELTER: &str = "go_to_smelter";
-const GO_TO_MERCHANT: &str = "go_to_merchant";
+const GO_TO_HOUSE: &str = "go_to_house_action";
+const GO_TO_OUTSIDE: &str = "go_to_outside_action";
+const GO_TO_MUSHROOM: &str = "go_to_mushroom_action";
+const GO_TO_ORE: &str = "go_to_ore_action";
+const GO_TO_SMELTER: &str = "go_to_smelter_action";
+const GO_TO_MERCHANT: &str = "go_to_merchant_action";
 
 /// This is our marker components, so we can keep track of the various in-game entities
 #[derive(Component)]
@@ -119,8 +119,8 @@ struct Hunger(f64);
 #[derive(Component, Clone, DatumComponent)]
 struct Energy(f64);
 
-#[derive(Component, Clone, DatumComponent)]
-struct AtLocation(usize);
+#[derive(Component, Clone, EnumComponent)]
+struct AtLocation(Location);
 
 #[derive(Component, Clone, DatumComponent)]
 struct HasOre(bool);
@@ -137,12 +137,12 @@ struct NeedsText;
 
 fn startup(mut commands: Commands, windows: Query<&Window>) {
     // Some helpers for our enums
-    let loc_house = Datum::Enum(Location::House as usize);
-    let loc_outside = Datum::Enum(Location::Outside as usize);
-    let loc_mushroom = Datum::Enum(Location::Mushroom as usize);
-    let loc_ore = Datum::Enum(Location::Ore as usize);
-    let loc_smelter = Datum::Enum(Location::Smelter as usize);
-    let loc_merchant = Datum::Enum(Location::Merchant as usize);
+    // let loc_house = Datum::Enum(Location::House as usize);
+    // let loc_outside = Datum::Enum(Location::Outside as usize);
+    // let loc_mushroom = Datum::Enum(Location::Mushroom as usize);
+    // let loc_ore = Datum::Enum(Location::Ore as usize);
+    // let loc_smelter = Datum::Enum(Location::Smelter as usize);
+    // let loc_merchant = Datum::Enum(Location::Merchant as usize);
 
     let window = windows.get_single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
@@ -161,63 +161,75 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         //     ;
 
         // Then we decide a goal of not being hungry nor tired
-        let goal = Goal::new()
-            .with_req(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
-            .with_req(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
-            // .with_req(HAS_ORE_KEY, Compare::Equals(Field::Bool(true)))
-            // .with_req(HAS_METAL_KEY, Compare::Equals(Field::from(true)))
-            .with_req(GOLD_KEY, Compare::GreaterThanEquals(Datum::I64(10)));
+        // let goal = Goal::new().with_req(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)));
+        // .with_req(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
+        // .with_req(HAS_ORE_KEY, Compare::Equals(Field::Bool(true)))
+        // .with_req(HAS_METAL_KEY, Compare::Equals(Field::from(true)))
+        // .with_req(GOLD_KEY, Compare::GreaterThanEquals(Datum::I64(10)));
+
+        let goal = Goal::from_reqs(&[Hunger::is_less(50.0), Energy::is_more(50.0)]);
 
         let goals = vec![goal.clone()];
 
-        let eat_action = Action::new(EAT_ACTION)
-            .with_precondition(LOCATION_KEY, Compare::Equals(Location::Mushroom.datum()))
-            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
-            .with_effect(
-                Effect::new(EAT_ACTION)
-                    .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(25.0)))
-                    .with_mutator(Mutator::Decrement(ENERGY_KEY.to_string(), Datum::F64(5.0)))
-                    .with_mutator(Mutator::Set(
-                        LOCATION_KEY.to_string(),
-                        Location::Outside.datum(),
-                    )),
-            );
+        let eat_action = EatAction::new()
+            .add_precondition(AtLocation::is(Location::Mushroom))
+            .add_mutator(Hunger::decrease(25.0))
+            .add_mutator(AtLocation::set(Location::Outside))
+            .set_cost(2);
 
-        let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Datum::F64(50.0))
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_house));
+        let sleep_action = SleepAction::new()
+            .add_precondition(AtLocation::is(Location::House))
+            .add_mutator(Energy::increase(50.0))
+            .set_cost(1);
 
-        let mine_ore_action = Action::new(MINE_ORE_ACTION)
-            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
-            .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_ore))
-            .with_effect(
-                Effect::new(MINE_ORE_ACTION)
-                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(true)))
-                    .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(15.0)))
-                    .with_mutator(Mutator::Increment(ENERGY_KEY.to_string(), Datum::F64(50.0))),
-            );
+        // let eat_action = Action::new(EAT_ACTION)
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(Location::Mushroom.datum()))
+        //     .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
+        //     .with_effect(
+        //         Effect::new(EAT_ACTION)
+        //             .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(25.0)))
+        //             .with_mutator(Mutator::Decrement(ENERGY_KEY.to_string(), Datum::F64(5.0)))
+        //             .with_mutator(Mutator::Set(
+        //                 LOCATION_KEY.to_string(),
+        //                 Location::Outside.datum(),
+        //             )),
+        //     );
 
-        let smelt_ore_action = Action::new(SMELT_ORE_ACTION)
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_smelter))
-            .with_precondition(HAS_ORE_KEY, Compare::Equals(Datum::Bool(true)))
-            .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(25.0)))
-            .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
-            .with_effect(
-                Effect::new(SMELT_ORE_ACTION)
-                    .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(true)))
-                    .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(false))),
-                // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
-            );
+        // let sleep_action = simple_increment_action(SLEEP_ACTION, ENERGY_KEY, Datum::F64(50.0))
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_house));
 
-        let sell_metal_action = Action::new(SELL_METAL_ACTION)
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_merchant))
-            .with_precondition(HAS_METAL_KEY, Compare::Equals(Datum::Bool(true)))
-            .with_effect(
-                Effect::new(SELL_METAL_ACTION)
-                    .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(false)))
-                    .with_mutator(Mutator::Increment(GOLD_KEY.to_string(), Datum::I64(1))),
-                // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
-            );
+        // let mine_ore_action = Action::new(MINE_ORE_ACTION)
+        //     .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(50.0)))
+        //     .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_ore))
+        //     .with_effect(
+        //         Effect::new(MINE_ORE_ACTION)
+        //             .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(true)))
+        //             .with_mutator(Mutator::Decrement(HUNGER_KEY.to_string(), Datum::F64(15.0)))
+        //             .with_mutator(Mutator::Increment(ENERGY_KEY.to_string(), Datum::F64(50.0))),
+        //     );
+
+        // let smelt_ore_action = Action::new(SMELT_ORE_ACTION)
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_smelter))
+        //     .with_precondition(HAS_ORE_KEY, Compare::Equals(Datum::Bool(true)))
+        //     .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Datum::F64(25.0)))
+        //     .with_precondition(HUNGER_KEY, Compare::LessThanEquals(Datum::F64(50.0)))
+        //     .with_effect(
+        //         Effect::new(SMELT_ORE_ACTION)
+        //             .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(true)))
+        //             .with_mutator(Mutator::Set(HAS_ORE_KEY.to_string(), Datum::Bool(false))),
+        //         // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
+        //     );
+
+        // let sell_metal_action = Action::new(SELL_METAL_ACTION)
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_merchant))
+        //     .with_precondition(HAS_METAL_KEY, Compare::Equals(Datum::Bool(true)))
+        //     .with_effect(
+        //         Effect::new(SELL_METAL_ACTION)
+        //             .with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Datum::Bool(false)))
+        //             .with_mutator(Mutator::Increment(GOLD_KEY.to_string(), Datum::I64(1))),
+        //         // .with_mutator(Mutator::Set(LOCATION_KEY.to_string(), loc_outside)),
+        //     );
 
         // let sell_metal_action = simple_increment_action(SELL_METAL_ACTION, GOLD_KEY, Field::I64(1))
         //     .with_effect(Effect::new(SELL_METAL_ACTION).with_mutator(Mutator::Set(HAS_METAL_KEY.to_string(), Field::Bool(false))), 1)
@@ -226,55 +238,60 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         //     // .with_precondition(ENERGY_KEY, Compare::GreaterThanEquals(Field::from_f64(75.0)))
         //     ;
 
-        println!("Our sell metal action");
-        println!("{:#?}", sell_metal_action);
+        // println!("Our sell metal action");
+        // println!("{:#?}", sell_metal_action);
 
-        let go_to_outside_action = simple_action(GO_TO_OUTSIDE, LOCATION_KEY, loc_outside);
+        // let go_to_outside_action = simple_action(GO_TO_OUTSIDE, LOCATION_KEY, loc_outside);
+        let go_to_outside_action =
+            GoToOutsideAction::new().add_mutator(AtLocation::set(Location::Outside));
 
-        let go_to_house_action = simple_action(GO_TO_HOUSE, LOCATION_KEY, loc_house);
+        let go_to_house_action = GoToHouseAction::new()
+            // .add_precondition(AtLocation::is(Location::Outside))
+            .add_mutator(AtLocation::set(Location::House));
 
-        let go_to_mushroom_action = simple_action(GO_TO_MUSHROOM, LOCATION_KEY, loc_mushroom)
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
+        let go_to_mushroom_action = GoToMushroomAction::new()
+            // .add_precondition(AtLocation::is(Location::Outside))
+            .add_mutator(AtLocation::set(Location::Mushroom));
 
-        let go_to_ore_action = simple_action(GO_TO_ORE, LOCATION_KEY, loc_ore)
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
+        // let go_to_ore_action = simple_action(GO_TO_ORE, LOCATION_KEY, loc_ore)
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
 
-        let go_to_smelter_action = simple_action(GO_TO_SMELTER, LOCATION_KEY, loc_smelter)
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
+        // let go_to_smelter_action = simple_action(GO_TO_SMELTER, LOCATION_KEY, loc_smelter)
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
 
-        let go_to_merchant_action = simple_action(GO_TO_MERCHANT, LOCATION_KEY, loc_merchant)
-            .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
+        // let go_to_merchant_action = simple_action(GO_TO_MERCHANT, LOCATION_KEY, loc_merchant)
+        //     .with_precondition(LOCATION_KEY, Compare::Equals(loc_outside));
 
         let actions_map = create_action_map!(
             (EatAction, eat_action),
             (SleepAction, sleep_action),
-            (MineOreAction, mine_ore_action),
-            (SmeltOreAction, smelt_ore_action),
-            (SellMetalAction, sell_metal_action),
+            // (MineOreAction, mine_ore_action),
+            // (SmeltOreAction, smelt_ore_action),
+            // (SellMetalAction, sell_metal_action),
             (GoToOutsideAction, go_to_outside_action),
             (GoToHouseAction, go_to_house_action),
             (GoToMushroomAction, go_to_mushroom_action),
-            (GoToOreAction, go_to_ore_action),
-            (GoToSmelterAction, go_to_smelter_action),
-            (GoToMerchantAction, go_to_merchant_action),
+            // (GoToOreAction, go_to_ore_action),
+            // (GoToSmelterAction, go_to_smelter_action),
+            // (GoToMerchantAction, go_to_merchant_action),
         );
+
+        println!("Actions: {:#?}", actions_map);
 
         let initial_state = (
             Hunger(25.0),
             Energy(75.0),
-            AtLocation(Location::Outside as usize),
-            HasOre(false),
-            HasMetal(false),
-            GoldAmount(0),
+            AtLocation(Location::Outside), // HasOre(false),
+                                           // HasMetal(false),
+                                           // GoldAmount(0),
         );
 
         let state = create_state!(
-            Hunger(25.0),
+            Hunger(25.0), // asd
             Energy(75.0),
-            AtLocation(Location::Outside as usize),
-            HasOre(false),
-            HasMetal(false),
-            GoldAmount(0)
+            AtLocation(Location::Outside) // HasOre(false),
+                                          // HasMetal(false),
+                                          // GoldAmount(0)
         );
 
         let mut planner = Planner::new(state, goals, actions_map);
@@ -386,7 +403,7 @@ fn go_to_location<T>(
         origin.translation += direction * 128.0 * delta;
     } else {
         // We're there!
-        at_location.0 = destination_enum as usize;
+        at_location.0 = destination_enum;
 
         commands.entity(entity).remove::<T>();
     }
@@ -612,7 +629,7 @@ fn handle_eat_action(
         commands.entity(entity).remove::<EatAction>();
         commands.entity(mushroom.0).despawn_recursive();
 
-        at_location.0 = Location::Outside as usize;
+        at_location.0 = Location::Outside;
 
         // planner.state.fields.insert(
         //     LOCATION_KEY.to_string(),
@@ -713,7 +730,7 @@ fn handle_mine_ore_action(
                     //     LOCATION_KEY.to_string(),
                     //     Field::Enum(Location::Outside as usize),
                     // );
-                    at_location.0 = Location::Outside as usize;
+                    at_location.0 = Location::Outside;
 
                     commands.entity(entity).remove::<MineOreAction>();
                     commands.entity(closest.0).despawn_recursive();
@@ -788,7 +805,7 @@ fn handle_smelt_ore_action(
                 //     Field::Enum(Location::Outside as usize),
                 // );
 
-                at_location.0 = Location::Outside as usize;
+                at_location.0 = Location::Outside;
 
                 commands.entity(entity).remove::<SmeltOreAction>();
             } else {
@@ -852,7 +869,7 @@ fn handle_sell_metal_action(
                 //     LOCATION_KEY.to_string(),
                 //     Field::Enum(Location::Outside as usize),
                 // );
-                at_location.0 = Location::Outside as usize;
+                at_location.0 = Location::Outside;
 
                 commands.entity(entity).remove::<SellMetalAction>();
             } else {
@@ -892,9 +909,9 @@ fn print_current_local_state(
         Entity,
         &Hunger,
         &Energy,
-        &HasOre,
-        &HasMetal,
-        &GoldAmount,
+        // &HasOre,
+        // &HasMetal,
+        // &GoldAmount,
         &Children,
     )>,
     q_actions: Query<(
@@ -913,7 +930,8 @@ fn print_current_local_state(
     mut q_child: Query<&mut Text, With<NeedsText>>,
 ) {
     // let planner = query.get_single().unwrap();
-    for (entity, hunger, energy, has_ore, has_metal, gold_amount, children) in query.iter() {
+    // for (entity, hunger, energy, has_ore, has_metal, gold_amount, children) in query.iter() {
+    for (entity, hunger, energy, children) in query.iter() {
         // let hunger = match planner.state.fields.get(HUNGER_KEY).unwrap() {
         //     Field::F64(v) => v,
         //     _ => panic!("unimplemented!"),
@@ -926,9 +944,9 @@ fn print_current_local_state(
 
         let hunger = hunger.0;
         let energy = energy.0;
-        let has_ore = has_ore.0;
-        let has_metal = has_metal.0;
-        let gold_amount = gold_amount.0;
+        // let has_ore = has_ore.0;
+        // let has_metal = has_metal.0;
+        // let gold_amount = gold_amount.0;
 
         // let gold = match planner.state.fields.get(GOLD_KEY).unwrap() {
         //     Field::I64(v) => v,
@@ -1008,7 +1026,8 @@ fn print_current_local_state(
         for &child in children.iter() {
             let mut text = q_child.get_mut(child).unwrap();
             text.sections[0].value = format!(
-                "{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}"
+                // "{current_action}\nGold: {gold_amount}\nHunger: {hunger:.0}\nEnergy: {energy:.0}\nHas Ore? {has_ore}\nHas Metal? {has_metal}"
+                "{current_action}\nHunger: {hunger:.0}\nEnergy: {energy:.0}"
             );
         }
     }
@@ -1080,6 +1099,7 @@ fn main() {
     let mut app = App::new();
 
     app.add_plugins(DefaultPlugins)
+        .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
         .add_plugins(DogoapPlugin)
         .add_plugins(bevy_framepace::FramepacePlugin)
         .add_systems(Startup, startup)

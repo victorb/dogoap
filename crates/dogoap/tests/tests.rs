@@ -525,3 +525,40 @@ fn test_reverse_strategy() {
     assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
     assert_eq!(expected_state, cons.state);
 }
+
+#[test]
+fn test_prefer_lower_cost_plan() {
+    // Planner should prefer cheaper plans based on cost
+    //
+    // Cheap action adds 1 gold and costs 1
+    // Expensive action adds 3 gold and costs 5
+    //
+    // Planner should only use cheap action 10 times instead of using expensive action as
+    // it'll be cheaper
+    let start = LocalState::new().with_datum("gold", Datum::I64(0));
+    let expected_state = LocalState::new().with_datum("gold", Datum::I64(10));
+
+    let goal = Goal::new().with_req("gold", Compare::Equals(Datum::I64(10)));
+
+    let cheap_action = Action::new("cheap_action")
+        .add_mutator(Mutator::Increment("gold".to_string(), Datum::I64(1)))
+        .set_cost(1); // Cost/gold is lower than expensive_action
+
+    let expensive_action = Action::new("expensive_action")
+        .add_mutator(Mutator::Increment("gold".to_string(), Datum::I64(3)))
+        .set_cost(4); // Cost/gold is higher than cheap_action
+
+    let actions = vec![cheap_action, expensive_action];
+
+    let plan = make_plan(&start, &actions[..], &goal).unwrap();
+    let effects = get_effects_from_plan(plan.0.clone());
+
+    println!("Found plan:");
+    println!("{:#?}", plan);
+
+    assert_eq!(10, effects.len());
+    for cons in &effects {
+        assert_eq!("cheap_action", cons.action);
+    }
+    assert_eq!(expected_state, effects.last().unwrap().state);
+}
