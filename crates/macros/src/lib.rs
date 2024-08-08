@@ -226,6 +226,9 @@ pub fn action_component_derive(input: TokenStream) -> TokenStream {
             fn new() -> Action {
                 Action::new(#snake_case_name)
             }
+            fn action_type_name(&self) -> &'static str {
+                stringify!(#name)
+            }
         }
     };
     gen.into()

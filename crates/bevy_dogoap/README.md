@@ -6,3 +6,6 @@ Dead simple example:
 // use bevy_dogoap::Action;
 // let action = Action{}
 ```
+
+
+

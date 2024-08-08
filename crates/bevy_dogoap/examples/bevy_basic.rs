@@ -10,6 +10,8 @@
 // Final state should be that is_hungry is false, and is_tired is false
 
 use bevy::{log::LogPlugin, prelude::*};
+
+// bevy_dogoap exposes a `prelude` that contains everything you might need
 use bevy_dogoap::prelude::*;
 
 // This is a DatumComponent that can hold one value
@@ -29,49 +31,32 @@ struct SleepAction;
 
 fn startup(mut commands: Commands) {
     // This is the goal we want the planner to help us reach
-    let goal = create_goal!(
-        (IsHungry, Compare::Equals, Datum::Bool(false)),
-        (IsTired, Compare::Equals, Datum::Bool(false))
-    );
+    let goal = Goal::from_reqs(&[IsHungry::is(false), IsTired::is(false)]);
 
     // Our first action, the eat action, that sets is_hungry to false
     // but requires is_tired to be set to false first
     let eat_action = EatAction::new()
-        .add_mutator(IsHungry::set(false))
-        .add_precondition(IsTired::is(false));
+        .add_precondition(IsTired::is(false))
+        .add_mutator(IsHungry::set(false));
 
     // Our first action, the sleep action, that sets is_tired to false
     // No preconditions in order to sleep
     let sleep_action = SleepAction::new().add_mutator(IsTired::set(false));
 
-    // Here we connect our string action with the Component we want to be added
-    // for that action
-    let actions_map = create_action_map!((EatAction, eat_action), (SleepAction, sleep_action));
+    // This create_planner! macro doesn't yet exists
+    let (planner, components) = create_planner!({
+        actions: [
+            (EatAction, eat_action),
+            (SleepAction, sleep_action)
+        ],
+        state: [IsHungry(true), IsTired(true)],
+        goals: [goal],
+    });
 
     // To spawn the planner, we first create a new entity
     // You can also use an existing entity if you have one at hand
     // This will usually be whatever Entity you use for your NPC
-    let entity = commands.spawn_empty().insert(Name::new("Planner")).id();
-
-    // Create our initial state
-    let initial_state = create_state!(IsHungry(true), IsTired(true));
-
-    // We create the instance of our planner with our initial state, our goals and finally the
-    // possible actions
-    let planner = Planner::new(initial_state, vec![goal], actions_map);
-
-    // Next we need to add all the DatumComponent we've created
-    // this function helps us do just that a tiny bit easier, it'll insert all registered components
-    planner.insert_datum_components(&mut commands, entity);
-
-    // We could also manually insert them ourselves like this instead of
-    // planner.insert_datum_components:
-    // commands
-    //     .entity(entity)
-    //     .insert((IsHungry(true), IsTired(true)));
-
-    // Finally we add our Planner component to the entity we spawned earlier
-    commands.entity(entity).insert(planner);
+    commands.spawn((Name::new("Planner"), planner, components));
 }
 
 // These two systems are regular Bevy systems. Looks for Entities that have

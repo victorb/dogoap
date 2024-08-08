@@ -1,5 +1,7 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
 use crate::planner;
+use bevy::{prelude::*, time::common_conditions::on_timer};
 
 pub struct DogoapPlugin;
 
@@ -20,7 +22,7 @@ impl Plugin for DogoapPlugin {
                     planner::create_planner_tasks,
                     planner::handle_planner_tasks,
                 )
-                    .chain(),
+                    .chain(), // .run_if(on_timer(Duration::from_millis(100))),
             )
             // .add_systems(PlanningSchedule,
             //     (planner::update_planner_local_state,

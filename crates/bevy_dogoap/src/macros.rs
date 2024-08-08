@@ -1,4 +1,23 @@
 #[macro_export]
+macro_rules! create_planner {
+    ({
+        actions: [$(($action_type:ty, $action:expr)),* $(,)?],
+        state: [$($state:expr),* $(,)?],
+        goals: [$($goal:expr),* $(,)?],
+    }) => {{
+        let actions_map = create_action_map!($(($action_type, $action.clone())),*);
+
+        let components = create_state!($($state.clone()),*);
+
+        let planner = Planner::new(components, vec![$($goal.clone()),*], actions_map);
+
+        let component_entities = ($($state.clone()),*);
+
+        (planner, component_entities)
+    }};
+}
+
+#[macro_export]
 macro_rules! create_action_map {
     ($(($marker:ty, $action:expr)),* $(,)?) => {{
         use std::collections::HashMap;

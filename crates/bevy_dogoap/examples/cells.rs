@@ -60,8 +60,6 @@ struct StateDebugText;
 fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
     let goal = Goal::from_reqs(&[IsReplicating::is(true)]);
 
-    let goals = vec![goal.clone()];
-
     let eat_action = EatAction::new()
         .add_precondition(AtFood::is(true))
         .add_mutator(Hunger::decrease(10.0))
@@ -80,18 +78,18 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
         .add_mutator(Hunger::increase(1.0))
         .set_cost(2);
 
-    let actions_map = create_action_map!(
-        (EatAction, eat_action),
-        (GoToFoodAction, go_to_food_action),
-        (ReplicateAction, replicate_action)
-    );
-
     let mut rng = rand::thread_rng();
-    let hunger = rng.gen_range(20.0..45.0);
-    let initial_state = (Hunger(hunger), AtFood(false), IsReplicating(false));
-    let state = create_state!(Hunger(hunger), AtFood(false), IsReplicating(false));
+    let starting_hunger = rng.gen_range(20.0..45.0);
 
-    let mut planner = Planner::new(state, goals, actions_map);
+    let (mut planner, components) = create_planner!({
+        actions: [
+            (EatAction, eat_action),
+            (GoToFoodAction, go_to_food_action),
+            (ReplicateAction, replicate_action)
+        ],
+        state: [Hunger(starting_hunger), AtFood(false), IsReplicating(false)],
+        goals: [goal],
+    });
 
     planner.remove_goal_on_no_plan_found = false; // Don't remove the goal
     planner.always_plan = true; // Re-calculate our plan whenever we can
@@ -107,7 +105,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
             Name::new("Cell"),
             Cell { speed, age: 0 },
             planner,
-            initial_state,
+            components,
             Transform::from_translation(position),
             GlobalTransform::from_translation(position),
             InheritedVisibility::default(),
@@ -294,7 +292,7 @@ fn handle_replicate_action(
                     let new_transform = transform.translation + Vec3::from_array([25., 0., 0.]);
                     spawn_cell(&mut commands, new_transform, cell.speed);
                     commands.entity(entity).remove::<ReplicateAction>();
-                    hunger.0 += 50.0;
+                    hunger.0 += 20.0;
                     timers.remove(&entity);
                     planner.always_plan = true;
                 } else {

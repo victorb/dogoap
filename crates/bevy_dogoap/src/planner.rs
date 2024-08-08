@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::time::Instant;
 use std::{collections::HashMap, fmt};
 
@@ -19,6 +20,9 @@ pub struct Planner {
     pub goals: Vec<Goal>,
     pub current_goal: Option<Goal>,
     pub current_action: Option<Action>,
+
+    // queue of action keys, first is current
+    pub current_plan: VecDeque<String>,
 
     // TODO figure out how to get reflect to work, if possible
     #[reflect(ignore)]
@@ -63,7 +67,7 @@ pub struct ComputePlan(Task<Option<(Vec<dogoap::prelude::Node>, usize)>>);
 pub struct IsPlanning;
 
 impl Planner {
-    pub fn new(initial_state: DatumComponents, goals: Vec<Goal>, actions_map: ActionsMap) -> Self {
+    pub fn new(components: DatumComponents, goals: Vec<Goal>, actions_map: ActionsMap) -> Self {
         let mut actions_for_dogoap: Vec<Action> = vec![];
         // let mut actions_map: ActionsMap = HashMap::new();
 
@@ -75,11 +79,12 @@ impl Planner {
 
         let mut ret = Self {
             state: LocalState::new(),
-            datum_components: initial_state,
+            datum_components: components,
             current_goal: goals.first().cloned(),
             goals,
             actions_map,
             current_action: None,
+            current_plan: VecDeque::new(),
             always_plan: true,
             remove_goal_on_no_plan_found: true,
             plan_next_tick: false,
@@ -90,14 +95,11 @@ impl Planner {
     }
 
     pub fn update_localstate(&mut self) {
-        let mut state = LocalState::new();
         for component in self.datum_components.iter() {
-            state
+            self.state
                 .data
                 .insert(component.field_key(), component.field_value());
         }
-
-        self.state = state;
     }
 
     pub fn insert_datum_components(&self, commands: &mut Commands, entity: Entity) {
@@ -169,12 +171,22 @@ pub fn handle_planner_tasks(
             commands.entity(entity).remove::<ComputePlan>();
             match p {
                 Some((plan, _cost)) => {
-                    println!("This is the plan we found:");
+                    // println!("This is the plan we found:");
+                    // print_plan((plan.clone(), _cost));
 
-                    print_plan((plan.clone(), _cost));
                     let effects = get_effects_from_plan(plan);
 
-                    // println!("Effects: \n{:#?}", effects);
+                    let effect_names: VecDeque<String> =
+                        effects.iter().map(|i| i.action.to_string()).collect();
+
+                    if planner.current_plan != effect_names {
+                        planner.current_plan = effect_names.clone();
+                        info!(
+                            "Current plan changed to: \n{:#?}\n(steps:{})",
+                            effect_names,
+                            effects.len()
+                        );
+                    }
 
                     match effects.first() {
                         Some(first_effect) => {
@@ -186,13 +198,11 @@ pub fn handle_planner_tasks(
                                 && Some(found_action) != planner.current_action.as_ref()
                             {
                                 // We used to work towards a different action, so lets remove that one first.
-                                // TODO remove specific one, but for now, remove all of them?
-                                // let found_component = planner
-                                //     .components_map
-                                //     .get(&planner.current_action.clone().unwrap().key)
-                                //     .unwrap();
-                                action_component.remove(&mut commands, entity);
-                                println!("Removed previous component {action_name}");
+                                // action_component.remove(&mut commands, entity);
+                                // TODO remove all possible actions in order to avoid race conditions
+                                for (_, (_, component)) in planner.actions_map.iter() {
+                                    component.remove(&mut commands, entity);
+                                }
                             }
 
                             // TODO this is a bit horrible... Not only calling `.unwrap`, but the whole
@@ -201,7 +211,7 @@ pub fn handle_planner_tasks(
                             //     planner.components_map.get(&found_action.key).unwrap();
                             action_component.insert(&mut commands, entity);
                             planner.current_action = Some(found_action.clone());
-                            println!("Set new action");
+                            // println!("Set new action");
                         }
                         None => {
                             if planner.remove_goal_on_no_plan_found {

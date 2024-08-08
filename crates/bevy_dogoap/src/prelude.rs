@@ -7,8 +7,8 @@ pub use dogoap::prelude::{
 };
 
 pub use crate::{
-    create_action_map, create_goal, create_state, planner::IsPlanning, planner::Planner,
-    register_components,
+    create_action_map, create_goal, create_planner, create_state, planner::IsPlanning,
+    planner::Planner, register_components,
 };
 
 pub use crate::plugin::DogoapPlugin;

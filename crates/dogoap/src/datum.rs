@@ -39,7 +39,7 @@ impl Eq for Datum {}
 
 impl Datum {
     pub fn distance(&self, other: &Datum) -> u64 {
-        match (self, other) {
+        let ret = match (self, other) {
             (Datum::Bool(a), Datum::Bool(b)) => {
                 if a == b {
                     0
@@ -57,7 +57,9 @@ impl Datum {
                 }
             }
             _ => panic!("Cannot calculate distance between different Datum types"),
-        }
+        };
+        // ret * 10 // TODO remove, testing to increase distance to prevent oscillation
+        ret
     }
 }
 

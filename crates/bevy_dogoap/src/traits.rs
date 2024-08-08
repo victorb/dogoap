@@ -63,6 +63,8 @@ pub trait ActionComponent: Send + Sync {
     fn key() -> String;
     /// Creates a new [`Action`] with our snake_case key
     fn new() -> Action;
+    /// Returns the type name
+    fn action_type_name(&self) -> &'static str;
 }
 
 pub trait EnumDatum: Send + Sync {
