@@ -1,4 +1,3 @@
-#![feature(trivial_bounds)]
 #![doc = include_str!("../README.md")]
 
 // Public API
