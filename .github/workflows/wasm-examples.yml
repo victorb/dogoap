@@ -36,6 +36,8 @@ jobs:
           default: nightly-2024-07-30
           components: rustfmt, clippy, rust-src
           target: wasm32-unknown-unknown
+      - name: install wasm-bindgen
+        run: cargo install -f wasm-bindgen-cli
       - name: make wasm-examples
         run: make wasm-examples
       - name: Setup Pages
