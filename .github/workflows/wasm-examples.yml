@@ -34,7 +34,7 @@ jobs:
           toolchain: nightly
           override: true
           default: nightly
-          components: rustfmt, clippy rust-src
+          components: rustfmt, clippy, rust-src
           target: wasm32-unknown-unknown
       - name: make wasm-examples
         run: make wasm-examples
