@@ -58,11 +58,17 @@ pub trait DatumComponent: Send + Sync {
 ///     Action::new("my_action")
 /// );
 /// ```
+#[bevy_trait_query::queryable]
+#[reflect_trait]
 pub trait ActionComponent: Send + Sync {
     /// Gets the action key but in snake_case ("AtLocation" becomes "at_location")
-    fn key() -> String;
+    fn key() -> String
+    where
+        Self: Sized;
     /// Creates a new [`Action`] with our snake_case key
-    fn new() -> Action;
+    fn new() -> Action
+    where
+        Self: Sized;
     /// Returns the type name
     fn action_type_name(&self) -> &'static str;
 }

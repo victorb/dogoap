@@ -1,61 +1,7 @@
 <html>
   <head>
-    <style>
-:root {
-  --color1: rgba(0,0,0,0.9);
-}
-
-body {
-  background: linear-gradient(
-    135deg,
-    var(--color1) 0%,
-    var(--color1) 49%,
-    black 49%,
-    black 51%,
-    var(--color1) 51%,
-    var(--color1) 100%
-    ) repeat;
-  background-size: 20px 20px;
-  font-family: sans-serif;
-}
-
-canvas {
-  background-color: rgba(0, 0, 0, 0.05);
-  backdrop-filter: blur(3px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  width: 1280px;
-  height: 720px;
-  min-width: 180px;
-  min-height: 120px;
-}
-
-#container {
-  width: 100vw;
-  height: 90vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-      #menu {
-        height: 10vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      a {
-        margin: 40px;
-        font-size: 22px;
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-      }
-
-      a.active, a:hover {
-        color: rgba(255, 255, 255, 1.0);
-        text-decoration: underline;
-      }
-    </style>
+    <title>Dogoap Bevy Examples</title>
+    <link rel="stylesheet" href="./style.css">
   </head>
   <body>
     <div id="menu">
@@ -81,21 +27,17 @@ canvas {
 
       if (example === "miner") {
         initMiner()
-        markActive("miner")
       } else if (example === "cells") {
         initCells()
-        markActive("cells")
       } else if (example === "resman") {
         initLemonade()
-        markActive("resman")
       } else if (example === "von_neumann") {
         initNeumann()
-        markActive("von_neumann")
       } else {
         // default option
         initCells()
-        markActive("cells")
       }
+      markActive(example || "cells")
 
       window.onhashchange = () => {
         window.location.reload()

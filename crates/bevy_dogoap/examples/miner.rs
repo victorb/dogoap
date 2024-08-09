@@ -818,6 +818,7 @@ fn print_current_local_state(
         Option<&GoToSmelterAction>,
         Option<&GoToMerchantAction>,
     )>,
+    // action_query: Query<&dyn ActionComponent>,
     mut q_child: Query<&mut Text, With<NeedsText>>,
 ) {
     for (entity, hunger, energy, has_ore, has_metal, gold_amount, children) in query.iter() {

@@ -60,6 +60,15 @@ macro_rules! register_components {
 }
 
 #[macro_export]
+macro_rules! register_actions {
+    ($app:ident, vec![$($comp:ty),*]) => {
+        $(
+            $app.register_component_as::<dyn ActionComponent, $comp>();
+        )*
+    };
+}
+
+#[macro_export]
 macro_rules! create_goal {
     ($(($type:ident, $comp:path, $field:expr)),*) => {{
         let mut goal = Goal::new();
