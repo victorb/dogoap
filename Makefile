@@ -28,3 +28,7 @@ release: check test clippy doc
 .PHONY: test-coverage
 test-coverage:
 	cargo tarpaulin -o html
+
+.PHONY: wasm-examples
+wasm-examples:
+	./build-wasm-examples.sh
