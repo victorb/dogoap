@@ -115,7 +115,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         let sleep_action = SleepAction::new()
             .add_precondition(Energy::is_less(50.0))
             .add_precondition(AtLocation::is(Location::House))
-            .add_mutator(Energy::increase(50.0))
+            .add_mutator(Energy::increase(100.0))
             .set_cost(1);
 
         let eat_action = EatAction::new()
@@ -126,14 +126,14 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .set_cost(2);
 
         let mine_ore_action = MineOreAction::new()
-            .add_precondition(Energy::is_more(50.0))
+            .add_precondition(Energy::is_more(10.0))
             .add_precondition(Hunger::is_less(75.0))
             .add_precondition(AtLocation::is(Location::Ore))
             .add_mutator(HasOre::set(true))
             .set_cost(3);
 
         let smelt_ore_action = SmeltOreAction::new()
-            .add_precondition(Energy::is_more(50.0))
+            .add_precondition(Energy::is_more(10.0))
             .add_precondition(Hunger::is_less(75.0))
             .add_precondition(AtLocation::is(Location::Smelter))
             .add_precondition(HasOre::is(true))
@@ -142,7 +142,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
             .set_cost(4);
 
         let sell_metal_action = SellMetalAction::new()
-            .add_precondition(Energy::is_more(50.0))
+            .add_precondition(Energy::is_more(10.0))
             .add_precondition(Hunger::is_less(75.0))
             .add_precondition(AtLocation::is(Location::Merchant))
             .add_precondition(HasMetal::is(true))
