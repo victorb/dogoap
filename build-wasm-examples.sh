@@ -12,7 +12,7 @@ EXAMPLES=(
 
 for EXAMPLE in "${EXAMPLES[@]}"; do
 
-  RUSTFLAGS="-Zlocation-detail=none" cargo +nightly build --profile=wasm-release --no-default-features --example="$EXAMPLE" --target=wasm32-unknown-unknown -Z build-std-features=panic_immediate_abort -Z build-std=std,panic_abort -Z build-std-features="optimize_for_size"
+  RUSTFLAGS="-Zlocation-detail=none" cargo build --profile=wasm-release --no-default-features --example="$EXAMPLE" --target=wasm32-unknown-unknown -Z build-std-features=panic_immediate_abort -Z build-std=std,panic_abort -Z build-std-features="optimize_for_size"
 
   time wasm-bindgen --out-name "$EXAMPLE" --no-typescript --out-dir web-src/wasm/examples --target web "target/wasm32-unknown-unknown/wasm-release/examples/$EXAMPLE.wasm"
 
