@@ -7,3 +7,11 @@ inherits = "release"
 codegen-units = 1
 lto = "fat"
 panic = "abort"
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = "z"
+codegen-units = 1
+strip = true
+lto = "fat"
+panic = "abort"

@@ -3,7 +3,11 @@ use std::time::Instant;
 use std::{collections::HashMap, fmt};
 
 use bevy::prelude::*;
+
+#[cfg(feature = "compute-pool")]
 use bevy::tasks::futures_lite::future;
+
+#[cfg(feature = "compute-pool")]
 use bevy::tasks::{AsyncComputeTaskPool, Task};
 
 use dogoap::prelude::*;
@@ -53,6 +57,9 @@ impl fmt::Debug for Planner {
         )
     }
 }
+
+#[cfg(not(feature = "compute-pool"))]
+struct Task<T>(T);
 
 /// This Component holds to-be-processed data for make_plan
 /// We do it in a asyncronous manner as make_plan blocks and if it takes 100ms, we'll delay frames
@@ -131,12 +138,16 @@ pub fn create_planner_tasks(
     mut commands: Commands,
     query: Query<(Entity, &Planner), Without<ComputePlan>>,
 ) {
+    #[cfg(feature = "compute-pool")]
     let thread_pool = AsyncComputeTaskPool::get();
+
     for (entity, planner) in query.iter() {
         if planner.always_plan {
             if let Some(goal) = planner.current_goal.clone() {
                 let state = planner.state.clone();
                 let actions = planner.actions_for_dogoap.clone();
+
+                #[cfg(feature = "compute-pool")]
                 let task = thread_pool.spawn(async move {
                     let start = Instant::now();
 
@@ -151,12 +162,23 @@ pub fn create_planner_tasks(
 
                     plan
                 });
+
+                #[cfg(not(feature = "compute-pool"))]
+                let task = Task(make_plan(&state, &actions[..], &goal));
+
                 commands
                     .entity(entity)
                     .insert((IsPlanning, ComputePlan(task)));
             }
         }
     }
+}
+
+#[cfg(not(feature = "compute-pool"))]
+fn grab_plan_from_task(
+    task: &mut Task<Option<(Vec<dogoap::prelude::Node>, usize)>>,
+) -> Option<(Vec<dogoap::prelude::Node>, usize)> {
+    task.0.clone()
 }
 
 /// This system is responsible for polling active [`ComputePlan`]s and switch the `current_action` if it changed
@@ -167,66 +189,72 @@ pub fn handle_planner_tasks(
     mut query: Query<(Entity, &mut ComputePlan, &mut Planner)>,
 ) {
     for (entity, mut task, mut planner) in query.iter_mut() {
-        if let Some(p) = future::block_on(future::poll_once(&mut task.0)) {
-            commands.entity(entity).remove::<ComputePlan>();
-            match p {
-                Some((plan, _cost)) => {
-                    // println!("This is the plan we found:");
-                    // print_plan((plan.clone(), _cost));
+        #[cfg(not(feature = "compute-pool"))]
+        let p = grab_plan_from_task(&mut task.0);
+        #[cfg(feature = "compute-pool")]
+        let p = match future::block_on(future::poll_once(&mut task.0)) {
+            Some(r) => r,
+            None => continue,
+        };
 
-                    let effects = get_effects_from_plan(plan);
+        commands.entity(entity).remove::<ComputePlan>();
+        match p {
+            Some((plan, _cost)) => {
+                // println!("This is the plan we found:");
+                // print_plan((plan.clone(), _cost));
 
-                    let effect_names: VecDeque<String> =
-                        effects.iter().map(|i| i.action.to_string()).collect();
+                let effects = get_effects_from_plan(plan);
 
-                    if planner.current_plan != effect_names {
-                        planner.current_plan = effect_names.clone();
-                        info!(
-                            "Current plan changed to: \n{:#?}\n(steps:{})",
-                            effect_names,
-                            effects.len()
-                        );
-                    }
+                let effect_names: VecDeque<String> =
+                    effects.iter().map(|i| i.action.to_string()).collect();
 
-                    match effects.first() {
-                        Some(first_effect) => {
-                            let action_name = first_effect.action.clone();
-
-                            let (found_action, action_component) = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
-
-                            if planner.current_action.is_some()
-                                && Some(found_action) != planner.current_action.as_ref()
-                            {
-                                // We used to work towards a different action, so lets remove that one first.
-                                // action_component.remove(&mut commands, entity);
-                                // TODO remove all possible actions in order to avoid race conditions
-                                for (_, (_, component)) in planner.actions_map.iter() {
-                                    component.remove(&mut commands, entity);
-                                }
-                            }
-
-                            // TODO this is a bit horrible... Not only calling `.unwrap`, but the whole
-                            // "do string match to find the right Component", slightly cursed
-                            // let found_component =
-                            //     planner.components_map.get(&found_action.key).unwrap();
-                            action_component.insert(&mut commands, entity);
-                            planner.current_action = Some(found_action.clone());
-                            // println!("Set new action");
-                        }
-                        None => {
-                            if planner.remove_goal_on_no_plan_found {
-                                debug!("Seems there is nothing to be done, removing current goal");
-                                planner.current_goal = None;
-                            }
-                        }
-                    }
+                if planner.current_plan != effect_names {
+                    planner.current_plan = effect_names.clone();
+                    debug!(
+                        "Current plan changed to: \n{:#?}\n(steps:{})",
+                        effect_names,
+                        effects.len()
+                    );
                 }
-                None => {
-                    warn!("Didn't find any plan for our goal in Entity {}!", entity);
-                    // warn!("No plan found");
+
+                match effects.first() {
+                    Some(first_effect) => {
+                        let action_name = first_effect.action.clone();
+
+                        let (found_action, action_component) = planner.actions_map.get(&action_name).unwrap_or_else(|| panic!("Didn't find action {:?} registered in the Planner::actions_map", action_name));
+
+                        if planner.current_action.is_some()
+                            && Some(found_action) != planner.current_action.as_ref()
+                        {
+                            // We used to work towards a different action, so lets remove that one first.
+                            // action_component.remove(&mut commands, entity);
+                            // TODO remove all possible actions in order to avoid race conditions
+                            for (_, (_, component)) in planner.actions_map.iter() {
+                                component.remove(&mut commands, entity);
+                            }
+                        }
+
+                        // TODO this is a bit horrible... Not only calling `.unwrap`, but the whole
+                        // "do string match to find the right Component", slightly cursed
+                        // let found_component =
+                        //     planner.components_map.get(&found_action.key).unwrap();
+                        action_component.insert(&mut commands, entity);
+                        planner.current_action = Some(found_action.clone());
+                        // println!("Set new action");
+                    }
+                    None => {
+                        if planner.remove_goal_on_no_plan_found {
+                            debug!("Seems there is nothing to be done, removing current goal");
+                            planner.current_goal = None;
+                        }
+                    }
                 }
             }
-            commands.entity(entity).remove::<IsPlanning>();
+            None => {
+                warn!("Didn't find any plan for our goal in Entity {}!", entity);
+                // warn!("No plan found");
+            }
         }
+        commands.entity(entity).remove::<IsPlanning>();
     }
 }

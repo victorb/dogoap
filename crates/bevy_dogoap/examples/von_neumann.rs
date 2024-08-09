@@ -223,7 +223,13 @@ fn is_point_in_cone(
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                canvas: Some("#example-canvas".into()),
+                ..default()
+            }),
+            ..default()
+        }))
         .add_systems(Startup, startup)
         .add_systems(Update, (update_probe, update_probe_detections, draw_ui))
         .add_systems(Update, update_probe_steering)

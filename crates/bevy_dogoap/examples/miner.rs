@@ -953,44 +953,48 @@ fn draw_gizmos(
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
-        .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new())
-        .add_plugins(DogoapPlugin)
-        .add_plugins(bevy_framepace::FramepacePlugin)
-        .add_systems(Startup, startup)
-        .add_systems(Update, draw_gizmos)
-        .add_systems(
-            FixedUpdate,
-            (
-                handle_go_to_outside_action,
-                handle_go_to_house_action,
-                handle_go_to_mushroom_action,
-                handle_go_to_ore_action,
-                handle_go_to_smelter_action,
-                handle_go_to_merchant_action,
-                handle_sleep_action,
-                handle_eat_action,
-                handle_mine_ore_action,
-                handle_smelt_ore_action,
-                handle_sell_metal_action,
-            ),
-        )
-        .add_systems(
-            FixedUpdate,
-            spawn_random_mushroom.run_if(on_timer(Duration::from_secs(5))),
-        )
-        .add_systems(
-            FixedUpdate,
-            spawn_random_ore.run_if(on_timer(Duration::from_secs(5))),
-        )
-        .add_systems(
-            FixedUpdate,
-            over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
-        )
-        .add_systems(
-            FixedUpdate,
-            print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
-        );
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            canvas: Some("#example-canvas".into()),
+            ..default()
+        }),
+        ..default()
+    }))
+    .add_plugins(DogoapPlugin)
+    .add_systems(Startup, startup)
+    .add_systems(Update, draw_gizmos)
+    .add_systems(
+        FixedUpdate,
+        (
+            handle_go_to_outside_action,
+            handle_go_to_house_action,
+            handle_go_to_mushroom_action,
+            handle_go_to_ore_action,
+            handle_go_to_smelter_action,
+            handle_go_to_merchant_action,
+            handle_sleep_action,
+            handle_eat_action,
+            handle_mine_ore_action,
+            handle_smelt_ore_action,
+            handle_sell_metal_action,
+        ),
+    )
+    .add_systems(
+        FixedUpdate,
+        spawn_random_mushroom.run_if(on_timer(Duration::from_secs(5))),
+    )
+    .add_systems(
+        FixedUpdate,
+        spawn_random_ore.run_if(on_timer(Duration::from_secs(5))),
+    )
+    .add_systems(
+        FixedUpdate,
+        over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
+    )
+    .add_systems(
+        FixedUpdate,
+        print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
+    );
 
     register_components!(
         app,

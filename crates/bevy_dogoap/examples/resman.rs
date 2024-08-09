@@ -25,13 +25,19 @@ fn main() {
     let mut app = App::new();
     register_components!(app, vec![Thirst, CarryingItem]);
 
-    app.add_plugins(DefaultPlugins)
-        .add_plugins(DogoapPlugin)
-        .add_systems(Startup, setup)
-        .add_systems(Update, (update_thirst, draw_state_debug, draw_ui))
-        // Systems that handle actions
-        .add_systems(Update, (handle_pickup_lemonade, handle_drink_lemonade))
-        .run();
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            canvas: Some("#example-canvas".into()),
+            ..default()
+        }),
+        ..default()
+    }))
+    .add_plugins(DogoapPlugin)
+    .add_systems(Startup, setup)
+    .add_systems(Update, (update_thirst, draw_state_debug, draw_ui))
+    // Systems that handle actions
+    .add_systems(Update, (handle_pickup_lemonade, handle_drink_lemonade))
+    .run();
 }
 
 // LocalFields

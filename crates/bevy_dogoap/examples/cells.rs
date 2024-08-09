@@ -472,41 +472,47 @@ fn increment_age(mut query: Query<&mut Cell>) {
 fn main() {
     let mut app = App::new();
 
-    app.add_plugins(DefaultPlugins)
-        .add_plugins(DogoapPlugin)
-        .add_plugins(bevy_framepace::FramepacePlugin)
-        .add_systems(Startup, startup)
-        .add_systems(Update, draw_gizmos)
-        .add_systems(
-            FixedUpdate,
-            (
-                handle_move_to,
-                handle_go_to_food_action,
-                handle_eat_action,
-                handle_replicate_action,
-            )
-                .chain(),
+    app.add_plugins(DefaultPlugins.set(WindowPlugin {
+        primary_window: Some(Window {
+            canvas: Some("#example-canvas".into()),
+            ..default()
+        }),
+        ..default()
+    }))
+    .add_plugins(DogoapPlugin)
+    .add_plugins(bevy_framepace::FramepacePlugin)
+    .add_systems(Startup, startup)
+    .add_systems(Update, draw_gizmos)
+    .add_systems(
+        FixedUpdate,
+        (
+            handle_move_to,
+            handle_go_to_food_action,
+            handle_eat_action,
+            handle_replicate_action,
         )
-        .add_systems(
-            FixedUpdate,
-            spawn_random_food.run_if(on_timer(Duration::from_millis(100))),
-        )
-        .add_systems(
-            FixedUpdate,
-            over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
-        )
-        .add_systems(
-            FixedUpdate,
-            print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
-        )
-        .add_systems(
-            FixedUpdate,
-            increment_age.run_if(on_timer(Duration::from_millis(1000))),
-        )
-        .add_systems(
-            FixedUpdate,
-            print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
-        );
+            .chain(),
+    )
+    .add_systems(
+        FixedUpdate,
+        spawn_random_food.run_if(on_timer(Duration::from_millis(100))),
+    )
+    .add_systems(
+        FixedUpdate,
+        over_time_needs_change.run_if(on_timer(Duration::from_millis(100))),
+    )
+    .add_systems(
+        FixedUpdate,
+        print_cell_count.run_if(on_timer(Duration::from_millis(1000))),
+    )
+    .add_systems(
+        FixedUpdate,
+        increment_age.run_if(on_timer(Duration::from_millis(1000))),
+    )
+    .add_systems(
+        FixedUpdate,
+        print_current_local_state.run_if(on_timer(Duration::from_millis(50))),
+    );
 
     register_components!(app, vec![Hunger, AtFood]);
 
