@@ -30,6 +30,8 @@ jobs:
         run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
       - name: Install Rust Nightly
         run: rustup toolchain install nightly
+      - name: Install rust-src
+        run: rustup component add --toolchain nightly rust-src
       - name: Install wasm32 rust target
         run: rustup target install --toolchain nightly wasm32-unknown-unknown
       - name: make wasm-examples
