@@ -110,7 +110,7 @@ struct NeedsText;
 
 fn startup(mut commands: Commands, windows: Query<&Window>) {
     for i in 0..1 {
-        let gold_goal = Goal::from_reqs(&[GoldAmount::is(100)]);
+        let gold_goal = Goal::from_reqs(&[GoldAmount::is(3)]);
 
         let sleep_action = SleepAction::new()
             .add_precondition(Energy::is_less(50.0))

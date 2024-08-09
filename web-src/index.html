@@ -31,13 +31,14 @@ canvas {
 
 #container {
   width: 100vw;
-  height: 100vh;
+  height: 90vh;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
       #menu {
+        height: 10vh;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -50,7 +51,7 @@ canvas {
         text-decoration: none;
       }
 
-      a:hover {
+      a.active, a:hover {
         color: rgba(255, 255, 255, 1.0);
         text-decoration: underline;
       }
@@ -72,26 +73,33 @@ canvas {
       import initLemonade from './wasm/examples/resman.js'
       import initNeumann from './wasm/examples/von_neumann.js'
 
+      function markActive(id) {
+        document.querySelector(`a[href="#${id}"]`).classList.add("active")
+      }
+
       const example = window.location.hash.substr(1)
 
       if (example === "miner") {
         initMiner()
+        markActive("miner")
       } else if (example === "cells") {
         initCells()
+        markActive("cells")
       } else if (example === "resman") {
         initLemonade()
+        markActive("resman")
       } else if (example === "von_neumann") {
         initNeumann()
+        markActive("von_neumann")
       } else {
         // default option
         initCells()
+        markActive("cells")
       }
 
       window.onhashchange = () => {
         window.location.reload()
       }
-
-      // setTimeout(init, 3000)
     </script>
   </body>
 </html>

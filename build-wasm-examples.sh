@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script builds, optimizes and packages all the examples as WASM demos
 
 set -ex
@@ -23,4 +24,4 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
 
 done
 
-ls -hl web-src/wasm/examples
+ls -hl web-src/wasm/examples/miner*
