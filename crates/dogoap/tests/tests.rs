@@ -36,43 +36,7 @@ fn test_basic_bool_setting() {
     assert_eq!(expected_state, cons.state);
 }
 
-// Anything that implements Reflect could be a key
-#[test]
-fn test_action_keys() {
-    let start = LocalState::new().with_datum("is_hungry", Datum::Bool(true));
-
-    let goal = Goal::new().with_req("is_hungry", Compare::Equals(Datum::Bool(false)));
-
-    let eat_mutator = Mutator::Set("is_hungry".to_string(), Datum::Bool(false));
-
-    let eat_consequence = Effect {
-        action: "eat".to_string(),
-        mutators: vec![eat_mutator.clone()],
-        state: LocalState::new(),
-        cost: 1,
-    };
-
-    let eat_action = Action {
-        key: "eat".to_string(),
-        preconditions: vec![],
-        effects: vec![eat_consequence],
-    };
-
-    let actions: Vec<Action> = vec![eat_action];
-
-    let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
-    assert_eq!(1, plan.len());
-
-    let cons = plan.get(0).unwrap();
-    assert_eq!("eat", cons.action);
-    assert_eq!(1, cons.mutators.len());
-    assert_eq!(eat_mutator, cons.mutators.get(0).unwrap().clone());
-
-    let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
-    assert_eq!(expected_state, cons.state);
-}
-
-// // The state is already what we need!
+// The state is already what we need!
 #[test]
 fn test_no_actions_needed() {
     let start = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
@@ -103,7 +67,7 @@ fn test_no_actions_needed() {
     let expected_state = LocalState::new().with_datum("is_hungry", Datum::Bool(false));
     assert_eq!(expected_state, plan.first().unwrap().state().clone());
 }
-//
+
 // Shorthand for one action that sets one field
 #[test]
 fn test_simple_action() {
@@ -127,8 +91,7 @@ fn test_simple_action() {
     assert_eq!(expected_state, cons.state);
 }
 
-// //
-// // // State with two fields + two actions each mutating their fields
+// State with two fields + two actions each mutating their fields
 #[test]
 fn test_two_bools() {
     let start = LocalState::new()
@@ -181,10 +144,10 @@ fn test_four_bools() {
         .with_req("is_dirty", Compare::Equals(Datum::Bool(false)));
 
     // Actions
-    // eat => not hungry
-    // sleep => not tired but now hungry
-    // train => fit but now dirty and tired
-    // shower => not dirty but now tired
+    // eat => no longer hungry
+    // sleep => no longer tired but now hungry
+    // train => now fit but now dirty and tired
+    // shower => no longer dirty but now tired
     let eat_action = simple_action("eat", "is_hungry", Datum::Bool(false));
 
     let sleep_action = simple_multi_mutate_action(
@@ -434,9 +397,6 @@ fn test_greater_than_equals() {
     let plan = make_plan(&start, &actions[..], &goal).unwrap();
     let effects = get_effects_from_plan(plan.0.clone());
 
-    println!("Found plan:");
-    println!("{:#?}", plan);
-
     assert_eq!(9, effects.len());
 
     for cons in &effects {
@@ -465,7 +425,6 @@ fn test_long_plan() {
 
     let goal = Goal::new().with_req("gold", Compare::Equals(Datum::I64(10)));
 
-    // TOOD should keep the `10 as 64` syntax with .from somehow
     let sleep_action = simple_increment_action("sleep", "energy", Datum::I64(1));
 
     let eat_action = simple_decrement_action("eat", "hunger", Datum::I64(1))
@@ -487,13 +446,8 @@ fn test_long_plan() {
     let actions: Vec<Action> = vec![sleep_action, eat_action, rob_people];
 
     let plan = get_effects_from_plan(make_plan(&start, &actions[..], &goal).unwrap().0);
-    assert_eq!(50, plan.len());
 
-    // for cons in &plan {
-    //     assert_eq!("eat", cons.action);
-    //     assert_eq!(None, cons.argument);
-    //     assert_eq!(1, cons.mutators.len());
-    // }
+    assert_eq!(50, plan.len());
 
     assert_eq!(expected_state, plan.last().unwrap().state);
 }

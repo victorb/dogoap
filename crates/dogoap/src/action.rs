@@ -53,25 +53,11 @@ impl Action {
         self
     }
 
-    pub fn with_mutator(&mut self, mutator: Mutator) -> Self {
-        if self.effects.len() == 0 {
-            self.effects = vec![Effect::new(&self.key.clone())];
-            self.clone()
-        } else {
-            let ref mut effect = &mut self.effects[0];
-            effect.mutators.push(mutator);
-            // }
-
-            // let mut effect = self.options.first().unwrap().0.clone();
-            // effect.mutators.push(mutator);
-            self.clone()
-        }
-    }
-
     pub fn add_precondition(mut self, precondition: (String, Compare)) -> Self {
         self.preconditions.push(precondition);
         self
     }
+
     // TODO currently only handles one effect
     pub fn add_mutator(mut self, mutator: Mutator) -> Self {
         if self.effects.len() == 0 {
@@ -83,6 +69,7 @@ impl Action {
         }
         self
     }
+
     pub fn set_cost(mut self, new_cost: usize) -> Self {
         let mut effect = self.effects[0].clone();
         effect.cost = new_cost;

@@ -34,7 +34,9 @@ impl std::fmt::Debug for Node {
 }
 
 fn heuristic(node: &Node, goal: &Goal) -> usize {
-    node.state().distance_to_goal(goal) as usize
+    let distance = node.state().distance_to_goal(goal) as usize;
+    log::debug!("Current distance to goal {:?}", distance);
+    distance
 }
 
 // TODO This function is fucking horrible
@@ -81,8 +83,13 @@ fn successors<'a>(
 }
 
 fn is_goal(node: &Node, goal: &Goal) -> bool {
+    log::debug!("Checking if we're at goal");
     goal.requirements.iter().all(|(key, value)| {
         if let Some(state_val) = node.state().data.get(key) {
+            println!(
+                "Wanted {:?} and got {:?}, for key {:?}",
+                value, state_val, key
+            );
             compare_values(value, state_val)
         } else {
             panic!("Couldn't find key {:#?} in LocalState", key);

@@ -64,6 +64,12 @@ pub fn check_preconditions(state: &LocalState, action: &Action) -> bool {
             .data
             .get(key)
             .unwrap_or_else(|| panic!("Couldn't find key {:#?} in LocalState", key));
+        log::debug!(
+            "Checking value {:?} against {:?}, state_value was {:?}",
+            key,
+            value,
+            state_value
+        );
         compare_values(value, state_value)
     })
 }

@@ -178,7 +178,7 @@ mod test {
     }
 
     #[test]
-    fn test_basic_bevy_integration() {
+    fn test_basic_bevy_integration_internal() {
         let mut app = App::new();
 
         // TODO get rid of this somehow?

@@ -12,19 +12,19 @@
 
 Given a current state like this:
 
-```
+```ignore
 is_hungry = true
 ```
 
 And with the following available actions:
 
-```
+```ignore
 eat_action = Mutator::set("is_hungry", false)
 ```
 
 And with a goal like this:
 
-```
+```ignore
 is_hungry = false
 ```
 

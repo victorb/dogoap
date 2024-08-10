@@ -5,7 +5,7 @@
 [![Docs](https://docs.rs/bevy_dogoap/badge.svg)](https://docs.rs/bevy_dogoap/latest/bevy_dogoap/)
 [![ci](https://github.com/victorb/dogoap/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/victorb/dogoap/actions/workflows/ci.yml)
 
-Simple example:
+Full Bevy + `bevy_dogoap` example:
 
 ```rust
 use bevy::prelude::*;
@@ -62,10 +62,12 @@ fn main() {
     register_components!(app, vec![IsHungry]);
 
     app.add_plugins(MinimalPlugins)
+        // !!! Don't forget to add the plugin ;)
        .add_plugins(DogoapPlugin)
        .add_systems(Startup, startup)
        .add_systems(FixedUpdate, handle_eat_action);
 
+    // Run a couple of updates to run forward the world
     for _i in 0..3 {
         app.update();
     }
