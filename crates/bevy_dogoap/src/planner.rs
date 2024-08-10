@@ -78,7 +78,7 @@ impl Planner {
         let mut actions_for_dogoap: Vec<Action> = vec![];
         // let mut actions_map: ActionsMap = HashMap::new();
 
-        for (key, (action, component)) in actions_map.iter() {
+        for (_key, (action, _component)) in actions_map.iter() {
             // actions_map.insert(key.clone().to_string(), action.clone());
             // components_map.insert(key.clone().to_string(), component.clone_box());
             actions_for_dogoap.push(action.clone());

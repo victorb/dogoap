@@ -15,23 +15,62 @@
 // Worker has Actions:
 // - GoToServingDesk, TakeOrder, MakeProduct, MoveProduct, HandOverOrder
 
-use std::collections::HashMap;
+/* Sequence Diagram for the full flow of actions (paste into https://sequencediagram.org/)
 
-use bevy::{color::palettes::css::*, prelude::*};
+Customer->Customer: Check thirst
+Customer->Serve Desk: GoToServeDesk
+
+Worker->Serve Desk: GoToServeDesk
+Customer->Serve Desk: Create Order
+
+Worker->Lemonade Maker: Produce Lemonade
+Lemonade Maker->Worker: Produced Lemonade
+
+Worker->Serve Desk: Complete Order
+Customer<-Serve Desk: Pickup Order
+Customer->Customer: Drink Lemonade
+
+*/
+
+use std::collections::{HashMap, VecDeque};
+
+use bevy::{color::palettes::css::*, input::common_conditions::input_toggle_active, prelude::*};
 use bevy_dogoap::prelude::*;
-use dogoap::prelude::*;
+use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 fn main() {
     let mut app = App::new();
     // Customer components + actions
-    register_components!(app, vec![Thirst, CarryingItem, PlacedOrder, OrderReady]);
+    register_components!(
+        app,
+        vec![
+            Thirst,
+            CarryingItem,
+            PlacedOrder,
+            OrderReady,
+            AtOrderDesk,
+            ShouldGoToOrderDesk
+        ]
+    );
     register_actions!(
         app,
-        vec![DrinkLemonade, PickupLemonade, WaitForOrder, PlaceOrder]
+        vec![
+            DrinkLemonade,
+            PickupLemonade,
+            WaitForOrder,
+            PlaceOrder,
+            GoToOrderDesk
+        ]
     );
     // Worker components + actions
-    register_components!(app, vec![Energy]);
-    register_actions!(app, vec![Rest]);
+    register_components!(
+        app,
+        vec![Energy, AtLemonadeMaker, ServedOrder, ShouldGoToOrderDesk]
+    );
+    register_actions!(
+        app,
+        vec![Rest, ServeOrder, ProduceLemonade, GoToLemonadeMaker]
+    );
 
     app.add_plugins(DefaultPlugins.set(WindowPlugin {
         primary_window: Some(Window {
@@ -41,10 +80,24 @@ fn main() {
         ..default()
     }))
     .add_plugins(DogoapPlugin)
+    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::KeyI)))
     .add_systems(Startup, setup)
-    .add_systems(Update, (update_thirst, draw_state_debug, draw_ui))
+    .add_systems(Update, (draw_state_debug, draw_ui))
+    // Systems that always affects needs
+    .add_systems(FixedUpdate, update_thirst)
     // Systems that handle actions
-    .add_systems(Update, (handle_pickup_lemonade, handle_drink_lemonade))
+    .add_systems(
+        FixedUpdate,
+        (
+            handle_pickup_lemonade,
+            handle_drink_lemonade,
+            handle_place_order,
+            handle_wait_for_order,
+            handle_go_to_order_desk,
+            handle_move_to,
+            handle_call_worker_to_empty_order_desk,
+        ),
+    )
     .run();
 }
 
@@ -62,6 +115,12 @@ struct PlacedOrder(bool);
 #[derive(Component, Clone, DatumComponent)]
 struct OrderReady(bool);
 
+#[derive(Component, Clone, DatumComponent)]
+struct AtOrderDesk(bool);
+
+#[derive(Component, Clone, DatumComponent)]
+struct ShouldGoToOrderDesk(bool);
+
 // Actions for customer
 
 #[derive(Component, Clone, Default, ActionComponent)]
@@ -76,21 +135,43 @@ struct WaitForOrder;
 #[derive(Component, Clone, Default, ActionComponent)]
 struct PlaceOrder;
 
+#[derive(Component, Clone, Default, ActionComponent)]
+struct GoToOrderDesk;
+
 // DatumComponents for worker
 
 #[derive(Component, Clone, DatumComponent)]
 struct Energy(f64);
 
+#[derive(Component, Clone, DatumComponent)]
+struct ServedOrder(bool);
+
+#[derive(Component, Clone, DatumComponent)]
+struct AtLemonadeMaker(bool);
+
+// Actions for worker
+
 #[derive(Component, Clone, Default, ActionComponent)]
 struct Rest;
+
+#[derive(Component, Clone, Default, ActionComponent)]
+struct ServeOrder;
+
+#[derive(Component, Clone, Default, ActionComponent)]
+struct ProduceLemonade;
+
+#[derive(Component, Clone, Default, ActionComponent)]
+struct GoToLemonadeMaker;
 
 // Markers
 
 #[derive(Component)]
 struct Agent;
 
-#[derive(Component)]
-struct Customer;
+#[derive(Component, Default)]
+struct Customer {
+    order: Option<Entity>,
+}
 
 #[derive(Component)]
 struct Worker;
@@ -107,7 +188,22 @@ enum Item {
 struct LemonadeMaker;
 
 #[derive(Component)]
-struct OrderDesk;
+struct Order {
+    items_to_produce: VecDeque<Item>,
+    items: Vec<Item>,
+    owner: Entity,
+}
+
+#[derive(Component, Default)]
+struct OrderDesk {
+    assigned_customer: Option<Entity>,
+    assigned_worker: Option<Entity>,
+    can_take_order: bool, // set to true when both customer and worker present
+    current_order: Option<Entity>,
+}
+
+#[derive(Component)]
+struct MoveTo(Vec3);
 
 #[derive(Component)]
 struct StateDebugText;
@@ -126,29 +222,42 @@ fn setup(mut commands: Commands) {
         // Requires us to not be carrying nothing, and leads to us having a lemonade
         let pickup_lemonade_action = PickupLemonade::new()
             .add_precondition(CarryingItem::is(Item::Nothing))
+            .add_precondition(OrderReady::is(true))
+            .add_precondition(AtOrderDesk::is(true))
             .add_mutator(CarryingItem::set(Item::Lemonade));
 
+        // Requires us to having placed an order, order not yet ready and we're at the order desk
         let wait_for_order_action = WaitForOrder::new()
             .add_precondition(PlacedOrder::is(true))
             .add_precondition(OrderReady::is(false))
+            .add_precondition(AtOrderDesk::is(true))
             .add_mutator(OrderReady::set(true));
 
+        // Requires us to not having placed an order previously, and we're at the ordering desk
         let place_order_action = PlaceOrder::new()
             .add_precondition(PlacedOrder::is(false))
+            .add_precondition(AtOrderDesk::is(true))
             .add_mutator(PlacedOrder::set(true));
 
-        // Drink Lemonade
-        // Pickup Lemonade
-        // Wait for Order
-        // Place Order
-        // Go To Order Desk
+        let go_to_order_desk_action = GoToOrderDesk::new()
+            .add_precondition(AtOrderDesk::is(false))
+            .add_mutator(AtOrderDesk::set(true));
 
         let (mut planner, components) = create_planner!({
             actions: [
                 (DrinkLemonade, drink_lemonade_action),
-                (PickupLemonade, pickup_lemonade_action)
+                (PickupLemonade, pickup_lemonade_action),
+                (WaitForOrder, wait_for_order_action),
+                (PlaceOrder, place_order_action),
+                (GoToOrderDesk, go_to_order_desk_action),
             ],
-            state: [Thirst(0.0), CarryingItem(Item::Nothing)],
+            state: [
+                Thirst(0.0),
+                CarryingItem(Item::Nothing),
+                PlacedOrder(false),
+                OrderReady(false),
+                AtOrderDesk(false),
+            ],
             goals: [goal],
         });
 
@@ -156,13 +265,11 @@ fn setup(mut commands: Commands) {
         planner.always_plan = true; // Re-calculate our plan whenever we can
         planner.current_goal = Some(goal.clone());
 
-        let t = Transform::from_scale(Vec3::splat(2.0));
-
         commands
             .spawn((
                 Agent,
                 Name::new("Customer"),
-                Customer,
+                Customer::default(),
                 planner,
                 components,
                 TransformBundle::from(Transform::from_xyz(-200.0, -100.0, 1.0)),
@@ -170,7 +277,7 @@ fn setup(mut commands: Commands) {
             .with_children(|subcommands| {
                 subcommands.spawn((
                     Text2dBundle {
-                        transform: Transform::from_translation(Vec3::new(10.0, -10.0, 10.0)),
+                        transform: Transform::from_translation(Vec3::new(-70.0, 0.0, 10.0)),
                         text: Text::from_section(
                             "",
                             TextStyle {
@@ -189,15 +296,57 @@ fn setup(mut commands: Commands) {
 
     // Spawn worker
     for _i in 0..1 {
-        let goal = Goal::from_reqs(&[Energy::is_more(1.0)]);
+        // Now for the worker
+
+        // Final outcome for the worker is increasing the amount of money, always
+        // We trick the agent into performing our actions forever by having a:
+        // ServedOrder DatumComponent that the agent wants to set to true,
+        // but at runtime it can never actually get there.
+
+        // In order to set ServedOrder to true, the agent needs to run ServeOrder
+
+        // let goal = Goal::from_reqs(&[Energy::is_more(1.0), ServedOrder::is(true)]);
+        let goal = Goal::from_reqs(&[AtOrderDesk::is(true)]);
+
+        let serve_order_action = ServeOrder::new()
+            .add_precondition(CarryingItem::is(Item::Lemonade))
+            .add_precondition(AtOrderDesk::is(true))
+            .add_mutator(ServedOrder::set(true));
+
+        let produce_lemonade_action = ProduceLemonade::new()
+            .add_precondition(CarryingItem::is(Item::Nothing))
+            .add_precondition(AtLemonadeMaker::is(true))
+            .add_mutator(CarryingItem::set(Item::Lemonade));
+
+        let go_to_lemonade_maker_action = GoToLemonadeMaker::new()
+            .add_precondition(AtLemonadeMaker::is(false))
+            .add_mutator(AtLemonadeMaker::set(true));
 
         let rest_action = Rest::new()
             .add_precondition(Energy::is_less(10.0))
             .add_mutator(Energy::increase(50.0));
 
+        let go_to_order_desk_action = GoToOrderDesk::new()
+            .add_precondition(AtOrderDesk::is(false))
+            .add_precondition(ShouldGoToOrderDesk::is(true))
+            .add_mutator(AtOrderDesk::set(true));
+
         let (planner, components) = create_planner!({
-            actions: [(Rest, rest_action)],
-            state: [Energy(50.0)],
+            actions: [
+                (Rest, rest_action),
+                (ServeOrder, serve_order_action),
+                (ProduceLemonade, produce_lemonade_action),
+                (GoToLemonadeMaker, go_to_lemonade_maker_action),
+                (GoToOrderDesk, go_to_order_desk_action),
+            ],
+            state: [
+                Energy(50.0),
+                ServedOrder(false),
+                AtLemonadeMaker(false),
+                AtOrderDesk(false),
+                CarryingItem(Item::Nothing),
+                ShouldGoToOrderDesk(false),
+            ],
             goals: [goal],
         });
 
@@ -230,31 +379,258 @@ fn setup(mut commands: Commands) {
             });
     }
 
-    commands.spawn((
-        LemonadeMaker,
-        TransformBundle::from(Transform::from_xyz(100.0, 0.0, 1.0)),
-    ));
+    commands
+        .spawn((
+            Name::new("Lemonade Maker"),
+            LemonadeMaker,
+            TransformBundle::from(Transform::from_xyz(100.0, 0.0, 1.0)),
+        ))
+        .with_children(|subcommands| {
+            subcommands.spawn((
+                Text2dBundle {
+                    transform: Transform::from_translation(Vec3::new(0.0, 25.0, 10.0)),
+                    text: Text::from_section(
+                        "Lemonade Maker",
+                        TextStyle {
+                            font_size: 12.0,
+                            ..default()
+                        },
+                    )
+                    .with_justify(JustifyText::Left),
+                    text_anchor: bevy::sprite::Anchor::TopLeft,
+                    ..default()
+                },
+                StateDebugText,
+            ));
+        });
 
-    commands.spawn((
-        OrderDesk,
-        TransformBundle::from(Transform::from_xyz(-100.0, 0.0, 1.0)),
-    ));
+    commands
+        .spawn((
+            Name::new("Order Desk"),
+            OrderDesk::default(),
+            TransformBundle::from(Transform::from_xyz(-100.0, 0.0, 1.0)),
+        ))
+        .with_children(|subcommands| {
+            subcommands.spawn((
+                Text2dBundle {
+                    transform: Transform::from_translation(Vec3::new(0.0, 50.0, 10.0)),
+                    text: Text::from_section(
+                        "Order Desk",
+                        TextStyle {
+                            font_size: 12.0,
+                            ..default()
+                        },
+                    )
+                    .with_justify(JustifyText::Left),
+                    text_anchor: bevy::sprite::Anchor::TopLeft,
+                    ..default()
+                },
+                StateDebugText,
+            ));
+        });
 
     commands.spawn(Camera2dBundle::default());
+}
+
+fn handle_call_worker_to_empty_order_desk(
+    mut commands: Commands,
+    mut q_order_desks: Query<(&mut OrderDesk, &Transform)>,
+    mut q_workers: Query<
+        (Entity, &mut ShouldGoToOrderDesk, &Transform),
+        (With<Worker>, Without<GoToOrderDesk>),
+    >,
+) {
+    for (mut order_desk, t_order_desk) in q_order_desks.iter_mut() {
+        if order_desk.assigned_customer.is_some() && order_desk.assigned_worker.is_none() {
+            // This order desk needs a worker!
+            // TODO continue here!
+            let (mut worker, mut should_go, t_worker) =
+                q_workers.iter_mut().next().expect("no workers");
+            should_go.0 = true;
+            // Do we want to assign this directly? Or move there first
+            // if t_worker.translation.distance(t_order_desk.translation) < 5.0 {
+            order_desk.assigned_worker = Some(worker);
+            // }
+        }
+    }
+}
+
+fn handle_move_to(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &MoveTo, &mut Transform)>,
+) {
+    for (entity, move_to, mut transform) in query.iter_mut() {
+        let destination = move_to.0;
+
+        if transform.translation.distance(destination) > 5.0 {
+            // If we're further away than 5 units, move closer
+            let direction = (destination - transform.translation).normalize();
+            transform.translation += direction * 96.0 * time.delta_seconds();
+        } else {
+            // If we're within 5 units, assume the MoveTo completed
+            commands.entity(entity).remove::<MoveTo>();
+        }
+    }
+}
+
+fn handle_go_to_order_desk(
+    mut commands: Commands,
+    mut q_order_desks: Query<(&Transform, &mut OrderDesk)>,
+    mut query: Query<
+        (
+            Entity,
+            &Transform,
+            &GoToOrderDesk,
+            &mut AtOrderDesk,
+            Option<&Customer>,
+        ),
+        Without<MoveTo>,
+    >,
+) {
+    for (entity, transform, _action, mut state, customer) in query.iter_mut() {
+        let (t_order_desk, mut order_desk) = q_order_desks
+            .get_single_mut()
+            .expect("Only one order desk expected!");
+
+        // Offset to the left for customer, to the right for worker
+        let with_offset = match customer {
+            Some(_) => t_order_desk.translation + Vec3::new(-50.0, 0.0, 0.0),
+            None => t_order_desk.translation + Vec3::new(50.0, 0.0, 0.0),
+        };
+
+        let distance = with_offset.distance(transform.translation);
+
+        if distance > 5.0 {
+            commands.entity(entity).insert(MoveTo(with_offset));
+        } else {
+            state.0 = true;
+            commands.entity(entity).remove::<GoToOrderDesk>();
+
+            match customer {
+                Some(_) => order_desk.assigned_customer = Some(entity),
+                None => order_desk.can_take_order = true,
+            };
+        }
+    }
+}
+
+fn handle_wait_for_order(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &Customer, &WaitForOrder, &mut OrderReady)>,
+    q_order: Query<&Order>,
+    // mut progresses: Local<HashMap<Entity, Timer>>,
+) {
+    for (entity, customer, _action, mut state) in query.iter_mut() {
+        match customer.order {
+            Some(e_order) => {
+                let order = q_order.get(e_order).expect("Impossible!");
+                if order.items_to_produce.is_empty() {
+                    // ORder is ready! Destroy and move on
+                } else {
+                    // Order not yet ready
+                }
+            }
+            None => {
+                // Shouldn't be possible!
+            }
+        }
+        // match progresses.get_mut(&entity) {
+        //     Some(progress) => {
+        //         if progress.tick(time.delta()).just_finished() {
+        //             state.0 = true;
+        //             commands.entity(entity).remove::<WaitForOrder>();
+        //             progresses.remove(&entity);
+        //         } else {
+        //             // In progress...
+        //             println!("WaitOrder Progress: {}", progress.fraction());
+        //         }
+        //     }
+        //     None => {
+        //         progresses.insert(entity, Timer::from_seconds(1.0, TimerMode::Once));
+        //     }
+        // }
+    }
+}
+
+fn handle_place_order(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(Entity, &mut Customer, &PlaceOrder, &mut PlacedOrder)>,
+    mut q_order_desks: Query<&mut OrderDesk>,
+    mut progresses: Local<HashMap<Entity, Timer>>,
+) {
+    for (entity, mut customer, _action, mut placed_order) in query.iter_mut() {
+        let mut order_desk = q_order_desks
+            .get_single_mut()
+            .expect("Only one order desk expected!");
+        // Need to make sure the serving counter has a worker at it before we
+        // can place an order
+        if order_desk.assigned_worker.is_some() && order_desk.can_take_order {
+            match progresses.get_mut(&entity) {
+                Some(progress) => {
+                    if progress.tick(time.delta()).just_finished() {
+                        // state.0 = true;
+                        // commands.entity(entity).remove::<PlaceOrder>();
+                        // progresses.remove(&entity);
+                        println!("PlaceOrder complete!");
+                        // Produce Order with one Lemonade, assign to OrderDesk
+                        let new_order = Order {
+                            items_to_produce: VecDeque::from([Item::Lemonade]),
+                            items: vec![],
+                            owner: entity,
+                        };
+
+                        let e_order = commands.spawn((Name::new("Order"), new_order)).id();
+                        order_desk.current_order = Some(e_order);
+                        customer.order = Some(e_order);
+
+                        placed_order.0 = true;
+                    } else {
+                        // In progress...
+                        println!("PlaceOrder Progress: {}", progress.fraction());
+                    }
+                }
+                None => {
+                    progresses.insert(entity, Timer::from_seconds(1.0, TimerMode::Once));
+                }
+            }
+        }
+    }
 }
 
 fn handle_pickup_lemonade(
     mut commands: Commands,
     time: Res<Time>,
-    mut query: Query<(Entity, &PickupLemonade, &mut CarryingItem)>,
+    mut query: Query<(
+        Entity,
+        &PickupLemonade,
+        &mut CarryingItem,
+        &mut OrderReady,
+        &mut PlacedOrder,
+        &mut AtOrderDesk,
+    )>,
     mut progresses: Local<HashMap<Entity, Timer>>,
 ) {
-    for (entity, _action, mut state) in query.iter_mut() {
+    for (entity, _action, mut state, mut order_ready, mut placed_order, mut at_order_desk) in
+        query.iter_mut()
+    {
         match progresses.get_mut(&entity) {
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
                     state.0 = Item::Lemonade;
-                    commands.entity(entity).remove::<PickupLemonade>();
+
+                    // Reset order status
+                    order_ready.0 = false;
+                    placed_order.0 = false;
+                    at_order_desk.0 = false;
+
+                    commands
+                        .entity(entity)
+                        .remove::<PickupLemonade>()
+                        .insert(MoveTo(Vec3::new(-222.0, 0.0, 0.0)));
+
                     progresses.remove(&entity);
                 } else {
                     // In progress...
@@ -279,12 +655,12 @@ fn handle_drink_lemonade(
             Some(progress) => {
                 if progress.tick(time.delta()).just_finished() {
                     state.0 = Item::Nothing;
-                    thirst.0 = (thirst.0 - 5.0).max(0.0);
 
                     commands.entity(entity).remove::<DrinkLemonade>();
                     progresses.remove(&entity);
                 } else {
                     // In progress...
+                    thirst.0 = (thirst.0 - 0.05).max(0.0);
                     println!("Drink Progress: {}", progress.fraction());
                 }
             }
@@ -306,16 +682,8 @@ fn update_thirst(time: Res<Time>, mut query: Query<&mut Thirst>) {
 
 fn draw_state_debug(
     q_planners: Query<(Entity, &Name, &Children), With<Planner>>,
-    // q_workers: Query<(Entity, &Name, &Children), With<Worker>>,
     q_actions: Query<(Entity, &dyn ActionComponent)>,
     q_datums: Query<(Entity, &dyn DatumComponent)>,
-    // q_worker_actions: Query<(Option<>)>
-    // q_actions: Query<(
-    //     Option<&IsPlanning>,
-    //     Option<&EatAction>,
-    //     Option<&GoToMushroomAction>,
-    //     Option<&ReplicateAction>,
-    // )>,
     mut q_child: Query<&mut Text, With<StateDebugText>>,
 ) {
     for (entity, name, children) in q_planners.iter() {
@@ -354,20 +722,6 @@ fn draw_state_debug(
                 format!("{name}\n{current_action}\nEntity: {entity}\n---\n{state}");
         }
     }
-    // for (entity, name, children) in q_workers.iter() {
-    //     let current_action = "Idle";
-
-    //     // let (is_planning, eat, go_to_mushroom, replicate) = q_actions.get(entity).unwrap();
-
-    //     // if is_planning.is_some() {
-    //     //     current_action = "Planning...";
-    //     // }
-
-    //     for &child in children.iter() {
-    //         let mut text = q_child.get_mut(child).unwrap();
-    //         text.sections[0].value = format!("{name}\n{current_action}\nEntity: {entity}");
-    //     }
-    // }
 }
 
 fn draw_ui(
@@ -404,7 +758,7 @@ fn draw_ui(
         gizmos.rect_2d(
             transform.translation.xy(),
             0.0,
-            Vec2::new(20.0, 20.0),
+            Vec2::new(40.0, 40.0),
             BLUE_VIOLET,
         );
     }
