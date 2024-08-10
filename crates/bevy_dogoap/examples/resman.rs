@@ -17,18 +17,17 @@
 
 /* Sequence Diagram for the full flow of actions (paste into https://sequencediagram.org/)
 
-Customer->Customer: Check thirst
-Customer->Serve Desk: GoToServeDesk
-
-Worker->Serve Desk: GoToServeDesk
-Customer->Serve Desk: Create Order
-
-Worker->Lemonade Maker: Produce Lemonade
-Lemonade Maker->Worker: Produced Lemonade
-
-Worker->Serve Desk: Complete Order
-Customer<-Serve Desk: Pickup Order
-Customer->Customer: Drink Lemonade
+Customer->Order Desk: GoToOrderDesk
+Order Desk->Worker: RequestWorker
+Worker->Order Desk: GoToOrderDesk
+Customer->Order Desk: PlaceOrder
+Worker->Order Desk: TakeOrder
+Customer->Order Desk: WaitForOrder
+Worker->Lemonade Maker: GoToLemonadeMaker
+Lemonade Maker->Worker: MakeLemonade
+Worker->Order Desk: FinishOrder
+Customer->Order Desk: PickupLemonade
+Customer->Customer: DrinkLemonade
 
 */
 
@@ -36,7 +35,6 @@ use std::collections::{HashMap, VecDeque};
 
 use bevy::{color::palettes::css::*, input::common_conditions::input_toggle_active, prelude::*};
 use bevy_dogoap::prelude::*;
-use bevy_inspector_egui::quick::WorldInspectorPlugin;
 
 fn main() {
     let mut app = App::new();
@@ -80,7 +78,6 @@ fn main() {
         ..default()
     }))
     .add_plugins(DogoapPlugin)
-    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::KeyI)))
     .add_systems(Startup, setup)
     .add_systems(Update, (draw_state_debug, draw_ui))
     // Systems that always affects needs
