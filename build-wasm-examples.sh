@@ -6,8 +6,8 @@ set -ex
 EXAMPLES=(
   "miner"
   "cells"
-  "resman"
-  "von_neumann"
+  # "resman"
+  # "von_neumann"
 )
 
 for EXAMPLE in "${EXAMPLES[@]}"; do
