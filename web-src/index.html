@@ -1,23 +1,27 @@
 <html>
-  <head>
-    <title>Dogoap Bevy Examples</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/speed-highlight/core/dist/themes/github-dark.css">
-    <link rel="stylesheet" href="./style.css">
-  </head>
-  <body>
-    <div id="menu">
-      <a href="#cells">Cells / Quickstart</a>
-      <a href="#miner">Miner / Longer plans</a>
-      <a href="#resman">Lemonade / Co-operation</a>
-      <a href="#von_neumann">Von Neumann / Player interaction</a>
+
+<head>
+  <title>Dogoap Bevy Examples</title>
+  <link rel="stylesheet" href="./3rd-party/speed-highlight.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div id="menu">
+    <a href="#cells">Cells / Quickstart</a>
+    <a href="#miner">Miner / Longer plans</a>
+    <a href="#resman">Lemonade / Co-operation</a>
+    <a href="#von_neumann">Von Neumann / Player interaction</a>
+  </div>
+
+  <div id="wrapper">
+    <div id="container">
+      <span id="loading">Loading example...</span>
+      <canvas id="example-canvas"></canvas>
     </div>
-    <div id="wrapper">
-      <div id="container">
-        <span id="loading">Loading example...</span>
-        <canvas id="example-canvas"></canvas>
-      </div>
-      <div id="code" class='shj-lang-rs'></div>
-    </div>
-    <script type="module" src="./app.js"></script>
-  </body>
+    <div id="code" class='shj-lang-rs'></div>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+
 </html>

@@ -2,7 +2,7 @@ import initMiner from './wasm/examples/miner.js'
 import initCells from './wasm/examples/cells.js'
 import initLemonade from './wasm/examples/resman.js'
 import initNeumann from './wasm/examples/von_neumann.js'
-import {highlightAll} from 'https://cdn.jsdelivr.net/gh/speed-highlight/core/dist/index.js'
+import { highlightAll } from './3rd-party/speed-highlight.js'
 
 const example = window.location.hash.substr(1) || "cells"
 
