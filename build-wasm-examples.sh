@@ -22,6 +22,8 @@ for EXAMPLE in "${EXAMPLES[@]}"; do
 
   time brotli -9 -c "web-src/wasm/examples/${EXAMPLE}_bg.wasm" > "web-src/wasm/examples/${EXAMPLE}_bg.wasm.b"
 
+  cp "crates/bevy_dogoap/examples/$EXAMPLE.rs" "web-src/sources/$EXAMPLE.rs"
+
 done
 
 ls -hl web-src/wasm/examples/miner*

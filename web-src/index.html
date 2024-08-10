@@ -1,6 +1,7 @@
 <html>
   <head>
     <title>Dogoap Bevy Examples</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/speed-highlight/core/dist/themes/github-dark.css">
     <link rel="stylesheet" href="./style.css">
   </head>
   <body>
@@ -10,38 +11,13 @@
       <a href="#resman">Lemonade / Co-operation</a>
       <a href="#von_neumann">Von Neumann / Player interaction</a>
     </div>
-    <div id="container">
-      <canvas id="example-canvas"></canvas>
+    <div id="wrapper">
+      <div id="container">
+        <span id="loading">Loading example...</span>
+        <canvas id="example-canvas"></canvas>
+      </div>
+      <div id="code" class='shj-lang-rs'></div>
     </div>
-    <script type="module">
-      import initMiner from './wasm/examples/miner.js'
-      import initCells from './wasm/examples/cells.js'
-      import initLemonade from './wasm/examples/resman.js'
-      import initNeumann from './wasm/examples/von_neumann.js'
-
-      function markActive(id) {
-        document.querySelector(`a[href="#${id}"]`).classList.add("active")
-      }
-
-      const example = window.location.hash.substr(1)
-
-      if (example === "miner") {
-        initMiner()
-      } else if (example === "cells") {
-        initCells()
-      } else if (example === "resman") {
-        initLemonade()
-      } else if (example === "von_neumann") {
-        initNeumann()
-      } else {
-        // default option
-        initCells()
-      }
-      markActive(example || "cells")
-
-      window.onhashchange = () => {
-        window.location.reload()
-      }
-    </script>
+    <script type="module" src="./app.js"></script>
   </body>
 </html>
