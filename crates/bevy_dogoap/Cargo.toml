@@ -14,5 +14,5 @@ compute-pool = []
 bevy = { version = "0.14.0", default-features = false, optional = false, features = ["wayland", "bevy_gizmos", "bevy_text", "multi_threaded", "default_font", "webgl2"]}
 bevy-trait-query = { git = "https://github.com/RobWalt/bevy-trait-query.git", rev = "215b9068e8457d96ddcd4c8efa9605ba0f8feda5", version = "0.5.1" }
 dogoap = { path = "../dogoap", version = "*"}
-macros = { path = "../macros", version = "*"}
+dogoap_macros = { path = "../dogoap_macros", version = "*"}
 rand = "0.8.5"

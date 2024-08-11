@@ -1,7 +1,10 @@
 [package]
-name = "macros"
+name = "dogoap_macros"
+version = "0.2.0"
 edition = "2021"
-publish = false
+description = "dogoap_macros"
+license = "MIT"
+homepage = "https://github.com/victorb/dogoap"
 
 [lib]
 proc-macro = true

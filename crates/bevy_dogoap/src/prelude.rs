@@ -13,4 +13,4 @@ pub use crate::traits::{
     ActionComponent, DatumComponent, EnumDatum, InserterComponent, MutatorTrait, Precondition,
 };
 
-pub use macros::{ActionComponent, DatumComponent, EnumComponent, EnumDatum};
+pub use dogoap_macros::{ActionComponent, DatumComponent, EnumComponent, EnumDatum};
