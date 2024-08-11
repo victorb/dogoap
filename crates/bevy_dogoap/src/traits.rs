@@ -50,7 +50,7 @@ impl fmt::Debug for dyn InserterComponent {
 ///     ("hunger".to_string(), Compare::LessThanEquals(Datum::F64(10.0)))
 /// )
 /// ```
-#[bevy_trait_query::queryable]
+#[bevy_trait_query_0_14_0::queryable]
 #[reflect_trait]
 pub trait DatumComponent: Send + Sync {
     fn field_key(&self) -> String;
@@ -85,7 +85,7 @@ pub trait DatumComponent: Send + Sync {
 /// #[derive(DatumComponent)]
 /// struct Thirst(f64);
 /// ```
-#[bevy_trait_query::queryable]
+#[bevy_trait_query_0_14_0::queryable]
 #[reflect_trait]
 pub trait ActionComponent: Send + Sync {
     /// Gets the action key but in snake_case ("AtLocation" becomes "at_location")
