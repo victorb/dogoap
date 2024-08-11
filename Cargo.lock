@@ -445,7 +445,7 @@ dependencies = [
 
 [[package]]
 name = "bevy_dogoap"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "bevy",
  "bevy-trait-query-0-14-0",
@@ -1372,7 +1372,7 @@ dependencies = [
 
 [[package]]
 name = "dogoap"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "bevy_reflect",
  "log",
@@ -1381,7 +1381,7 @@ dependencies = [
 
 [[package]]
 name = "dogoap_macros"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "proc-macro2",
  "quote",

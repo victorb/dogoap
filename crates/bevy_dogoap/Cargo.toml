@@ -1,6 +1,6 @@
 [package]
 name = "bevy_dogoap"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "bevy_dogoap"
 license = "MIT"
@@ -13,6 +13,6 @@ compute-pool = []
 [dependencies]
 bevy = { version = "0.14.0", default-features = false, optional = false, features = ["wayland", "bevy_gizmos", "bevy_text", "multi_threaded", "default_font", "webgl2"]}
 bevy-trait-query-0-14-0 = { version = "0.6.2" }
-dogoap = { path = "../dogoap", version = "0.2.0"}
-dogoap_macros = { path = "../dogoap_macros", version = "0.2.0"}
+dogoap = { path = "../dogoap", version = "0.3.0"}
+dogoap_macros = { path = "../dogoap_macros", version = "0.3.0"}
 rand = "0.8.5"
