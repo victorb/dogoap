@@ -1,5 +1,5 @@
 # Data-Oriented GOAP (Goal-Oriented Action Planning)
-[![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/victorb/dogoap#License)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/victorb/dogoap#License)
 [![Crates.io](https://img.shields.io/crates/v/dogoap.svg)](https://crates.io/crates/dogoap)
 [![Downloads](https://img.shields.io/crates/d/dogoap.svg)](https://crates.io/crates/dogoap)
 [![Docs](https://docs.rs/dogoap/badge.svg)](https://docs.rs/dogoap/latest/dogoap/)

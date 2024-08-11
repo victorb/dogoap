@@ -1,5 +1,5 @@
 # `bevy_dogoap` - Integration of `dogoap` into Bevy's ECS model
-[![License](https://img.shields.io/badge/license-MIT%2FApache-blue.svg)](https://github.com/victorb/dogoap#License)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/victorb/dogoap#License)
 [![Crates.io](https://img.shields.io/crates/v/bevy_dogoap.svg)](https://crates.io/crates/bevy_dogoap)
 [![Downloads](https://img.shields.io/crates/d/bevy_dogoap.svg)](https://crates.io/crates/bevy_dogoap)
 [![Docs](https://docs.rs/bevy_dogoap/badge.svg)](https://docs.rs/bevy_dogoap/latest/bevy_dogoap/)
