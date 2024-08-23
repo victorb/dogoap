@@ -23,6 +23,7 @@ type DatumComponents = Vec<Box<dyn DatumComponent>>;
 /// Our main struct for handling the planning within Bevy, keeping track of added
 /// [`Action`]s, [`DatumComponent`]s, and some options for controlling the execution
 #[derive(Component, Reflect)]
+#[reflect(Component)]
 pub struct Planner {
     /// Our current state used for planning, updated by [`update_planner_local_state`] which reads
     /// the current state from our Bevy world and updates it accordingly
