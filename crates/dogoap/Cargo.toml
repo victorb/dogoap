@@ -4,7 +4,7 @@ version = "0.5.0"
 edition = "2021"
 description = "dogoap"
 license = "MIT"
-homepage = "https://github.com/victorb/dogoap"
+repository = "https://github.com/victorb/dogoap"
 
 [dependencies]
 bevy_reflect = "0.16"
