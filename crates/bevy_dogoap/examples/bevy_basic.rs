@@ -111,7 +111,7 @@ fn main() {
 
     // Lets inspect the final state of our (one) Planner we have in the World
     let mut query = app.world_mut().query::<&Planner>();
-    let planner = query.get_single(&app.world()).unwrap();
+    let planner = query.single(app.world()).unwrap();
 
     // This should confirm that is_hungry and is_tired have been set to `false`
     println!("Final state in our planner:");

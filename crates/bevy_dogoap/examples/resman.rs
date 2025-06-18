@@ -35,8 +35,8 @@ use std::collections::{HashMap, VecDeque};
 
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     window::{Window, WindowPlugin},
 };
 use bevy_dogoap::prelude::*;
@@ -410,6 +410,7 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2d);
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_call_worker_to_empty_order_desk(
     mut commands: Commands,
     mut q_order_desks: Query<(&mut OrderDesk, &Transform)>,
@@ -448,6 +449,7 @@ fn handle_move_to(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_go_to_order_desk(
     mut commands: Commands,
     mut q_order_desks: Query<(&Transform, &mut OrderDesk)>,
@@ -537,7 +539,7 @@ fn handle_place_order(
 ) {
     for (entity, mut customer, _action, mut placed_order) in query.iter_mut() {
         let mut order_desk = q_order_desks
-            .get_single_mut()
+            .single_mut()
             .expect("Only one order desk expected!");
         // Need to make sure the serving counter has a worker at it before we
         // can place an order
@@ -666,9 +668,8 @@ fn draw_state_debug(
 
         // Get current action, should always be one so grab the first one we find
         for (_entity, actions) in q_actions.get(entity).iter() {
-            for action in actions.iter() {
+            if let Some(action) = actions.iter().next() {
                 current_action = action.action_type_name();
-                break;
             }
         }
 
@@ -679,12 +680,12 @@ fn draw_state_debug(
                 state = format!(
                     "{}\n{}: {}",
                     state,
-                    datum.field_key().to_string(),
+                    datum.field_key(),
                     match datum.field_value() {
                         Datum::Bool(v) => v.to_string(),
-                        Datum::F64(v) => format!("{:.2}", v).to_string(),
-                        Datum::I64(v) => format!("{}", v).to_string(),
-                        Datum::Enum(v) => format!("{}", v).to_string(),
+                        Datum::F64(v) => format!("{v:.2}"),
+                        Datum::I64(v) => format!("{v}"),
+                        Datum::Enum(v) => format!("{v}"),
                     }
                 );
             }

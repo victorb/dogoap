@@ -1,7 +1,7 @@
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     time::common_conditions::on_timer,
     window::{Window, WindowPlugin},
 };
@@ -253,7 +253,7 @@ fn startup(mut commands: Commands, windows: Query<&Window>) {
         Transform::from_translation(Vec3::new(-300.0, -50.0, 0.0)),
     ));
 
-    let window = windows.get_single().expect("Expected only one window! Wth");
+    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
@@ -292,7 +292,7 @@ fn spawn_random_mushroom(
     mushrooms: Query<Entity, With<Mushroom>>,
 ) {
     if mushrooms.iter().len() < 10 {
-        let window = windows.get_single().expect("Expected only one window! Wth");
+        let window = windows.single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
@@ -314,7 +314,7 @@ fn spawn_random_ore(
     ores: Query<Entity, With<Ore>>,
 ) {
     if ores.iter().len() < 10 {
-        let window = windows.get_single().expect("Expected only one window! Wth");
+        let window = windows.single().expect("Expected only one window! Wth");
         let window_height = window.height() / 2.0;
         let window_width = window.width() / 2.0;
 
@@ -361,9 +361,7 @@ fn handle_go_to_house_action(
     q_house: Query<&Transform, With<House>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house
-            .get_single()
-            .expect("There should only be one house!");
+        let t_house = q_house.single().expect("There should only be one house!");
 
         go_to_location::<GoToHouseAction>(
             &mut at_location,
@@ -388,7 +386,7 @@ fn handle_go_to_smelter_action(
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
         let t_smelter = q_smelter
-            .get_single()
+            .single()
             .expect("There should only be one smelter!");
 
         go_to_location::<GoToSmelterAction>(
@@ -410,9 +408,7 @@ fn handle_go_to_outside_action(
     q_house: Query<&Transform, With<House>>,
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
-        let t_house = q_house
-            .get_single()
-            .expect("There should only be one house!");
+        let t_house = q_house.single().expect("There should only be one house!");
 
         // Outside is slightly to the left of the house... Fight me
         let offset = Vec3::new(-30.0, 0.0, 0.0);
@@ -441,7 +437,7 @@ fn handle_go_to_merchant_action(
 ) {
     for (entity, _action, mut t_entity, mut at_location) in query.iter_mut() {
         let t_destination = q_destination
-            .get_single()
+            .single()
             .expect("There should only be one merchant!");
 
         go_to_location::<GoToMerchantAction>(
@@ -532,10 +528,8 @@ fn find_closest(origin: Vec3, items: Vec<(Entity, Transform)>) -> Option<(Entity
             }
         }
     }
-    match closest {
-        Some((e, t, _f)) => Some((e, t.translation)),
-        None => None,
-    }
+
+    closest.map(|(e, t, _f)| (e, t.translation))
 }
 
 fn handle_eat_action(
@@ -557,7 +551,7 @@ fn handle_eat_action(
         let items: Vec<(Entity, Transform)> = q_mushrooms.iter().map(|(e, t)| (e, *t)).collect();
         let mushroom = find_closest(origin, items);
 
-        println!("Eating mushroom we found at {:?}", mushroom);
+        println!("Eating mushroom we found at {mushroom:?}");
 
         let mushroom = match mushroom {
             Some(v) => v,
@@ -567,7 +561,7 @@ fn handle_eat_action(
         hunger.0 -= 50.0;
 
         commands.entity(entity).remove::<EatAction>();
-        commands.entity(mushroom.0).despawn_recursive();
+        commands.entity(mushroom.0).despawn();
 
         at_location.0 = Location::Outside;
     }
@@ -629,6 +623,7 @@ fn action_with_progress<F>(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_mine_ore_action(
     time: Res<Time>,
     mut commands: Commands,
@@ -667,7 +662,7 @@ fn handle_mine_ore_action(
                     at_location.0 = Location::Outside;
 
                     commands.entity(entity).remove::<MineOreAction>();
-                    commands.entity(closest.0).despawn_recursive();
+                    commands.entity(closest.0).despawn();
                 } else {
                     let mut rng = rand::thread_rng();
 
@@ -686,6 +681,7 @@ fn handle_mine_ore_action(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_smelt_ore_action(
     time: Res<Time>,
     mut commands: Commands,
@@ -740,6 +736,7 @@ fn handle_smelt_ore_action(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_sell_metal_action(
     time: Res<Time>,
     mut commands: Commands,
@@ -797,6 +794,7 @@ fn over_time_needs_change(time: Res<Time>, mut query: Query<(&mut Hunger, &mut E
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn print_current_local_state(
     query: Query<(
         Entity,
@@ -924,19 +922,19 @@ fn draw_gizmos(
     }
 
     gizmos.rect_2d(
-        q_house.get_single().unwrap().translation.truncate(),
+        q_house.single().unwrap().translation.truncate(),
         Vec2::new(40.0, 80.0),
         AQUAMARINE,
     );
 
     gizmos.rect_2d(
-        q_smelter.get_single().unwrap().translation.truncate(),
+        q_smelter.single().unwrap().translation.truncate(),
         Vec2::new(30.0, 30.0),
         YELLOW_GREEN,
     );
 
     gizmos.circle_2d(
-        q_merchant.get_single().unwrap().translation.truncate(),
+        q_merchant.single().unwrap().translation.truncate(),
         16.,
         GOLD,
     );

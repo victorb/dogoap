@@ -1,7 +1,7 @@
 use bevy::{
     color::palettes::css::*,
-    prelude::*,
     prelude::Camera2d,
+    prelude::*,
     time::common_conditions::on_timer,
     window::{Window, WindowPlugin},
 };
@@ -125,7 +125,7 @@ fn spawn_cell(commands: &mut Commands, position: Vec3, speed: f32) {
 }
 
 fn startup(mut commands: Commands, windows: Query<&Window>) {
-    let window = windows.get_single().expect("Expected only one window! Wth");
+    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
@@ -156,7 +156,7 @@ fn spawn_random_food(
     mut commands: Commands,
     q_food: Query<Entity, With<Food>>,
 ) {
-    let window = windows.get_single().expect("Expected only one window! Wth");
+    let window = windows.single().expect("Expected only one window! Wth");
     let window_height = window.height() / 2.0;
     let window_width = window.width() / 2.0;
 
@@ -200,6 +200,7 @@ fn handle_move_to(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn handle_go_to_food_action(
     mut commands: Commands,
     mut query: Query<
@@ -252,7 +253,7 @@ fn handle_go_to_food_action(
             // Consume food!
             at_food.0 = true;
             commands.entity(entity).remove::<GoToFoodAction>();
-            targeted_food.remove(&e_food);
+            targeted_food.remove(e_food);
         }
     }
 }
@@ -340,7 +341,7 @@ fn handle_eat_action(
                     if hunger.0 < 0.0 {
                         hunger.0 = 0.0;
                     }
-                    commands.entity(*e_food).despawn_recursive();
+                    commands.entity(*e_food).despawn();
                 }
                 // Don't consume as it doesn't exists
                 Err(_) => {
@@ -371,7 +372,7 @@ fn over_time_needs_change(
         hunger.0 += val;
         if hunger.0 > 100.0 {
             // hunger.0 = 100.0;
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
             let translation = transform.translation;
             commands.spawn((
                 DeadCell,
@@ -383,6 +384,7 @@ fn over_time_needs_change(
     }
 }
 
+#[allow(clippy::type_complexity)]
 fn print_current_local_state(
     query: Query<(Entity, &Cell, &Hunger, &Children)>,
     q_actions: Query<(
@@ -394,7 +396,7 @@ fn print_current_local_state(
     q_child: Query<Entity, With<StateDebugText>>,
     mut text_writer: Text2dWriter,
 ) {
-    // let planner = query.get_single().unwrap();
+    // let planner = query.single().unwrap();
     for (entity, cell, hunger, children) in query.iter() {
         let age = cell.age;
         let hunger = hunger.0;
