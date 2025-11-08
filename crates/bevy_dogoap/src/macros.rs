@@ -11,7 +11,7 @@ macro_rules! create_planner {
         state: [$($state:expr),* $(,)?],
         goals: [$($goal:expr),* $(,)?],
     }) => {{
-        use bevy_platform::collections::HashMap;
+        use bevy::platform::collections::HashMap;
         use bevy_dogoap::prelude::InserterComponent;
         let actions_map: HashMap<String, (Action, Box<dyn InserterComponent>)> = HashMap::from([
             $(
