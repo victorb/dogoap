@@ -79,7 +79,7 @@ fn is_goal(node: &Node, goal: &Goal) -> bool {
                 node.state().data
             )
         });
-        compare_values(value, state_val)
+        compare_values(value, state_val, node.state().data.clone())
     })
 }
 

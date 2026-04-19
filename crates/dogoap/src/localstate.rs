@@ -48,7 +48,7 @@ impl LocalState {
             .iter()
             .map(|(key, goal_val)| {
                 match self.data.get(key) {
-                    Some(state_val) => state_val.distance(&goal_val.value()),
+                    Some(state_val) => state_val.distance(&goal_val.value(self.data.clone())),
                     None => 1, // Penalty for missing keys
                 }
             })
